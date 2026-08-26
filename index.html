@@ -1030,10 +1030,27 @@ async function renderJoinActivities(){
      <b>查看活動／報名 →</b>
    </article>`).join(''):'<div class="homeEmpty">目前沒有可報名的活動。</div>';
  list.querySelectorAll('.joinTripChoice').forEach(c=>{
-   const go=()=>{if(typeof window.openRegister!=='function')return alert('活動頁尚未載入完成，請重新整理後再試。');window.openRegister(c.dataset.slug)};
+   const go=()=>openRegister(c.dataset.slug);
    c.onclick=go;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}
  });
 }
+
+
+document.addEventListener('click',function(e){
+  const card=e.target.closest&&e.target.closest('#homeActivities .homeTripCard');
+  if(!card)return;
+  e.preventDefault();
+  const slug=card.dataset.slug;
+  if(slug&&typeof window.openRegister==='function')window.openRegister(slug);
+});
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  const card=e.target.closest&&e.target.closest('#homeActivities .homeTripCard');
+  if(!card)return;
+  e.preventDefault();
+  const slug=card.dataset.slug;
+  if(slug&&typeof window.openRegister==='function')window.openRegister(slug);
+});
 
 async function renderPublicHome(){
  const box=$('#homeActivities'),articles=$('#homeArticles');if(!box)return;
@@ -1051,7 +1068,7 @@ async function renderPublicHome(){
    <div>${esc(a.start_date)} — ${esc(a.end_date)}</div>
    <div class="homeTripMeta">${a.cancelled?'<span class="badge cancelled">⛔ 已取消</span>':''}<span class="chip homeTripCount">👥 目前 ${a.participant_count||0} 人</span>${(a.mountain_name||a.mountain_area)?`<span class="chip">${esc(a.mountain_name||a.mountain_area)}</span>`:''}</div>
    <b>${a.cancelled?'查看活動':'查看活動／報名'} →</b></div></article>`).join(''):'<div class="homeEmpty">目前沒有公開的近期活動。</div>';
- box.querySelectorAll('.homeTripCard').forEach(c=>{const go=()=>{if(typeof window.openRegister!=='function')return alert('活動頁尚未載入完成，請重新整理後再試。');window.openRegister(c.dataset.slug)};c.onclick=go;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}});
+ /* 首頁活動卡片由事件委派處理 */
  if(window.renderPublicArticles)window.renderPublicArticles();
 }
 
@@ -1205,6 +1222,27 @@ function formFees(f,total){
 
 $('#createAddGear').onclick=()=>{const g=norm($('#createCustomGear').value);if(g&&!createCustomGears.includes(g))createCustomGears.push(g);$('#createCustomGear').value='';renderCustom('#createCustomGearList',createCustomGears)};
 
+
+async function compressImage(file){
+  if(!file || !(file instanceof File) || !file.size)return null;
+  if(!String(file.type||'').startsWith('image/'))throw new Error('封面照片格式不支援');
+  if(file.size>12*1024*1024)throw new Error('封面照片請小於 12 MB');
+  const src=await new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(r.result);
+    r.onerror=()=>reject(new Error('照片讀取失敗'));
+    r.readAsDataURL(file);
+  });
+  const img=await new Promise((resolve,reject)=>{
+    const x=new Image();x.onload=()=>resolve(x);x.onerror=()=>reject(new Error('照片載入失敗'));x.src=src;
+  });
+  const scale=Math.min(1,1600/img.width,1000/img.height);
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(img.width*scale));
+  canvas.height=Math.max(1,Math.round(img.height*scale));
+  canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+  return canvas.toDataURL('image/jpeg',0.82);
+}
 $('#createForm').addEventListener('submit',async ev=>{
  ev.preventDefault();if(!sb)return alert('目前是本機預覽；請到已部署的網站建立活動。'); const f=new FormData(ev.target),btn=ev.target.querySelector('button[type="submit"]'),err=$('#createError');
  if(btn){btn.disabled=true;btn.textContent='建立中…'}; err?.classList.add('hidden');
