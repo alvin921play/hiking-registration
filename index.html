@@ -1298,31 +1298,77 @@ async function renderEvents(){
 }
 
 window.requestManage=async slug=>{
+ const diag=(msg)=>{
+   console.log('[管理活動診斷]',msg);
+   let box=document.getElementById('manageDiagBox');
+   if(!box){
+     box=document.createElement('div');
+     box.id='manageDiagBox';
+     box.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff;border:2px solid #222;border-radius:14px;padding:12px;box-shadow:0 8px 30px #0003;font-size:14px;white-space:pre-wrap';
+     document.body.appendChild(box);
+   }
+   box.textContent=msg;
+ };
  try{
-  if(!sb)return alert('目前無法連線 Supabase，請重新整理後再試。');
-  slug=norm(slug).toUpperCase();
-  if(!slug)return alert('找不到活動代碼');
-  const pw=prompt('請輸入活動管理密碼：'); if(pw===null)return;
-  const cleanPw=String(pw).trim();
-  if(!cleanPw)return alert('請輸入活動管理密碼');
-  const {data,error}=await sb.rpc('v17_manager_snapshot',{p_slug:slug,p_password:cleanPw});
-  if(error)return alert(error.message);
-  if(!data||!data.activity)return alert('活動管理資料讀取失敗');
-  currentSlug=slug;currentPassword=cleanPw;currentSnapshot=data;
+  diag('① 管理活動按鈕已觸發');
+  if(!sb){diag('❌ ② Supabase 尚未初始化');return alert('Supabase 尚未初始化');}
 
-  // 核心：驗證成功就先進管理頁，不讓任何次要區塊 render 錯誤把「管理活動」整顆按鈕拖死。
-  show('manageView');
-  try{
-    renderManage();
-  }catch(renderErr){
-    console.error('管理頁部分內容載入失敗',renderErr);
-    $('#manageTitle').textContent=data?.activity?.name||'活動管理';
-    const box=$('#manageSummary');
-    if(box)box.innerHTML='<div class="notice">活動管理已登入，但部分欄位載入失敗。其他可用功能仍可操作。</div>';
-    alert('已進入活動管理；部分欄位載入失敗：'+(renderErr?.message||renderErr));
+  slug=norm(slug).toUpperCase();
+  diag('② 活動代碼：'+slug);
+  if(!slug)return alert('找不到活動代碼');
+
+  const pw=prompt('請輸入活動管理密碼：');
+  if(pw===null){diag('⚠️ 已取消輸入密碼');return;}
+
+  const cleanPw=String(pw).trim();
+  if(!cleanPw){diag('❌ 密碼為空白');return alert('請輸入活動管理密碼');}
+
+  diag('③ 密碼已輸入，正在驗證管理資料…');
+
+  const result=await sb.rpc('v17_manager_snapshot',{
+    p_slug:slug,
+    p_password:cleanPw
+  });
+
+  if(result.error){
+    diag('❌ ④ RPC 失敗\n'+result.error.message);
+    return alert('管理資料讀取失敗：'+result.error.message);
   }
+
+  const data=result.data;
+  diag('④ RPC 成功，準備進入管理頁');
+
+  if(!data){
+    diag('❌ RPC 成功但沒有回傳資料');
+    return alert('活動管理沒有回傳資料');
+  }
+  if(!data.activity){
+    diag('❌ 回傳資料缺少 activity\n'+JSON.stringify(data,null,2).slice(0,1200));
+    return alert('活動管理資料缺少 activity');
+  }
+
+  currentSlug=slug;
+  currentPassword=cleanPw;
+  currentSnapshot=data;
+
+  diag('⑤ 密碼驗證成功，切換管理畫面');
+  show('manageView');
+
+  setTimeout(()=>{
+    try{
+      renderManage();
+      diag('✅ ⑥ 活動管理頁載入完成');
+      setTimeout(()=>document.getElementById('manageDiagBox')?.remove(),1800);
+    }catch(e){
+      console.error(e);
+      diag('⚠️ ⑥ 已進管理頁，但 renderManage 發生錯誤\n'+(e?.stack||e?.message||e));
+      alert('已登入活動管理，但部分畫面載入失敗：'+(e?.message||e));
+    }
+  },30);
+
  }catch(e){
-  console.error('開啟活動管理失敗',e);
+  console.error(e);
+  diag('❌ 未預期錯誤\n'+(e?.stack||e?.message||e));
   alert('開啟活動管理失敗：'+(e?.message||e));
  }
 };
