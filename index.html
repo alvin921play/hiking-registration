@@ -444,6 +444,22 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 .v20SectionHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.v20SectionHead h3{margin:0}
 .v21FormModal{margin-top:5vh}.v21FormModal .v21ModalClose{position:absolute;right:16px;top:14px}
 
+
+#homeArticles{display:grid;gap:10px}
+.v22ArticleCard{border:1px solid #e2dbcf;border-radius:16px;background:#faf7ef;overflow:hidden;cursor:pointer;transition:.16s ease}
+.v22ArticleCard:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(38,50,41,.07)}
+.v22ArticleThumb{width:100%;aspect-ratio:16/8;object-fit:cover;display:block;background:#eee8dd}
+.v22ArticleCardBody{padding:12px}.v22ArticleCardBody h3{font-size:16px;margin:4px 0 6px;color:#27332a}.v22ArticleCardBody p{margin:8px 0 0;color:#687267;font-size:12px;line-height:1.55}
+.v22ArticleDetail{position:fixed;inset:0;z-index:13000;background:#f4f0e7;display:none;overflow:auto}.v22ArticleDetail.open{display:block}
+.v22ArticlePage{width:min(860px,calc(100% - 28px));margin:0 auto;padding:22px 0 70px}.v22ArticleTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.v22ArticleContent{background:#fffdf8;border:1px solid #dfd7ca;border-radius:24px;padding:clamp(18px,4vw,38px)}
+.v22ArticleContent h1{font-size:clamp(26px,5vw,42px);line-height:1.12;margin:8px 0 12px;color:#27332a}
+.v22ArticleMeta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}.v22ArticleImages{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0 24px}.v22ArticleImages.one{grid-template-columns:1fr}
+.v22ArticleImages img{width:100%;max-height:560px;object-fit:cover;border-radius:18px;background:#eee8dd}.v22ArticleText{white-space:pre-wrap;font-size:15px;line-height:1.85;color:#343b35}
+.v22ArticleSource{margin-top:26px;padding-top:18px;border-top:1px solid #e5ded3}.v22ArticleSource a{font-weight:800}
+.v22UploadPreview{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.v22UploadPreview img{width:76px;height:58px;object-fit:cover;border-radius:10px;border:1px solid #ddd5c8}
+@media(max-width:650px){.v22ArticleImages{grid-template-columns:1fr}.v22ArticlePage{width:min(100% - 16px,860px)}}
+
 </style>
 <style>
 .prepGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
@@ -574,7 +590,10 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 </div>
 <label>網址（可不填）<input id="v195ArticleUrl" placeholder="https://..." type="url"/></label>
 <label>簡短說明<textarea id="v195ArticleContent" placeholder="寫一兩句重點；若是自己寫的內容，也可以只填這裡、不貼網址。" rows="4"></textarea></label>
-<div class="small muted">置頂與刪除由站長管理中心處理。</div>
+<label>文章照片（選填，最多 2 張）
+  <input accept="image/jpeg,image/png,image/webp" id="v22ArticleImages" multiple="" type="file"/>
+</label>
+<div class="small muted">每張最多 5 MB。置頂與刪除由站長管理中心處理。</div>
 <div class="v195ArticleActions"><button id="v195ArticleSubmit" type="button">發布分享</button></div>
 </div>
 </div>
@@ -906,6 +925,27 @@ try{
   sb=window.supabase.createClient(APP_CONFIG.SUPABASE_URL,APP_CONFIG.SUPABASE_PUBLISHABLE_KEY);
  }
 }catch(e){ console.warn('Supabase 尚未連線',e); } window.APP_DB=sb;
+window.uploadArticleImages=async function(files){
+  const db=window.APP_DB;
+  const arr=Array.from(files||[]);
+  if(arr.length>2)throw new Error('文章照片最多 2 張');
+  if(!arr.length)return [];
+  if(!db)throw new Error('目前無法連線 Supabase');
+  const urls=[];
+  for(const file of arr){
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('照片僅支援 JPG、PNG、WebP');
+    if(file.size>5*1024*1024)throw new Error('每張照片不可超過 5 MB');
+    const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+    const id=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(16).slice(2));
+    const path='articles/'+new Date().toISOString().slice(0,10)+'/'+id+'.'+ext;
+    const {error}=await db.storage.from('article-images').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});
+    if(error)throw error;
+    const {data}=db.storage.from('article-images').getPublicUrl(path);
+    if(!data?.publicUrl)throw new Error('照片網址建立失敗');
+    urls.push(data.publicUrl);
+  }
+  return urls;
+};
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const norm=s=>String(s||'').trim(), phone=s=>String(s||'').replace(/\D/g,'');
 const views=['managerView','manageView','registerView','recoverView','editView'];
@@ -1369,16 +1409,49 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
   const sb=window.APP_DB||null; const byId=id=>document.getElementById(id);
 
   
+  window.__v22PublicArticles=[];
+  window.openArticleDetail=function(article){
+    const overlay=document.getElementById('v22ArticleDetail');
+    const body=document.getElementById('v22ArticleDetailBody');
+    if(!overlay||!body||!article)return;
+    const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const imgs=Array.isArray(article.image_urls)?article.image_urls.filter(Boolean).slice(0,2):[];
+    body.innerHTML=`<article class="v22ArticleContent">
+      <div class="kicker">登山文章／分享</div>
+      <h1>${esc(article.title)}</h1>
+      <div class="v22ArticleMeta">${article.pinned?'<span class="pinned">📌 置頂</span>':''}<span class="chip">${esc(article.category||'其他')}</span>${article.created_at?`<span class="chip">${esc(new Date(article.created_at).toLocaleDateString('zh-TW'))}</span>`:''}</div>
+      ${imgs.length?`<div class="v22ArticleImages ${imgs.length===1?'one':''}">${imgs.map((u,i)=>`<img src="${esc(u)}" alt="${esc(article.title)} 圖片 ${i+1}">`).join('')}</div>`:''}
+      ${article.content?`<div class="v22ArticleText">${esc(article.content)}</div>`:'<div class="muted">這篇分享沒有文字內容。</div>'}
+      ${article.url?`<div class="v22ArticleSource"><a href="${esc(article.url)}" target="_blank" rel="noopener">開啟外部來源 ↗</a></div>`:''}
+    </article>`;
+    overlay.classList.add('open');document.body.style.overflow='hidden';
+  };
+  document.addEventListener('click',e=>{
+    if(e.target.closest('#v22ArticleBack')){
+      document.getElementById('v22ArticleDetail')?.classList.remove('open');document.body.style.overflow='';return;
+    }
+    if(e.target.id==='v22ArticleDetail'){
+      e.target.classList.remove('open');document.body.style.overflow='';
+    }
+  });
   window.renderPublicArticles=async function renderPublicArticles(){
     const host=byId('homeArticles'); if(!host)return;
     if(!sb){host.innerHTML='<div class="muted">部署後會顯示公共分享。</div>';return}
-    const {data,error}=await sb.rpc('v20_public_articles');
+    const {data,error}=await sb.rpc('v22_public_articles');
     if(error){host.innerHTML=`<div class="muted">文章讀取失敗：${String(error.message||error)}</div>`;return}
-    const posts=data||[];
+    const posts=data||[];window.__v22PublicArticles=posts;
     const esc2=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    host.innerHTML=posts.length?posts.slice(0,3).map(x=>
-      `<div class="homeArticle">${x.pinned?'<span class="pinned">📌 置頂</span>':''}<b>${esc2(x.title)}</b> <span class="chip">${esc2(x.category||'其他')}</span>${x.content?`<div class="small" style="margin-top:5px">${esc2(x.content.slice(0,85))}${x.content.length>85?'…':''}</div>`:''}${x.url?`<div style="margin-top:5px"><a href="${esc2(x.url)}" target="_blank" rel="noopener">開啟來源 ↗</a></div>`:''}</div>`
-    ).join(''):'<div class="muted">目前還沒有公開文章。</div>';
+    host.innerHTML=posts.length?posts.slice(0,3).map((x,i)=>{
+      const img=Array.isArray(x.image_urls)&&x.image_urls.length?x.image_urls[0]:'';
+      return `<article class="v22ArticleCard" tabindex="0" role="button" data-article-index="${i}">
+        ${img?`<img class="v22ArticleThumb" src="${esc2(img)}" alt="${esc2(x.title)}">`:''}
+        <div class="v22ArticleCardBody">${x.pinned?'<span class="pinned">📌 置頂</span>':''}<h3>${esc2(x.title)}</h3><span class="chip">${esc2(x.category||'其他')}</span>${x.content?`<p>${esc2(x.content.slice(0,90))}${x.content.length>90?'…':''}</p>`:''}<div class="small" style="margin-top:8px;font-weight:800">閱讀全文 →</div></div>
+      </article>`;
+    }).join(''):'<div class="muted">目前還沒有公開文章。</div>';
+    host.querySelectorAll('.v22ArticleCard').forEach(card=>{
+      const open=()=>window.openArticleDetail(posts[+card.dataset.articleIndex]);
+      card.onclick=open;card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}};
+    });
   }
   renderPublicArticles();
 
@@ -1439,10 +1512,10 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
     if(!sb)return alert('目前無法連線 Supabase，請確認 config.js 與部署設定。');
     const btn=byId('v195ArticleSubmit'); btn.disabled=true; btn.textContent='發布中…';
     try{
-      const {error}=await sb.rpc('v20_add_public_article',{p_title:title,p_category:category,p_url:url,p_content:content});
+      const imageUrls=await window.uploadArticleImages(byId('v22ArticleImages')?.files||[]); const {error}=await sb.rpc('v22_add_public_article',{p_title:title,p_category:category,p_url:url,p_content:content,p_image_urls:imageUrls});
       if(error)throw error;
       ['v195ArticleTitle','v195ArticleUrl','v195ArticleContent'].forEach(id=>{const e=byId(id);if(e)e.value=''});
-      byId('v195ArticleModal')?.classList.remove('open');
+      if(byId('v22ArticleImages'))byId('v22ArticleImages').value=''; byId('v195ArticleModal')?.classList.remove('open');
       await renderPublicArticles();
       alert('分享已發布');
     }catch(e){alert(e?.message||'發布失敗')}
@@ -1630,7 +1703,37 @@ document.addEventListener('click', function(e){
 </div>
 </div>
 </div>
-<script>
+<div aria-modal="true" class="v20Overlay" id="v21ActivityModal" role="dialog">
+<div class="v20Modal v21FormModal">
+<button class="ghost v21ModalClose" type="button">✕</button>
+<div class="kicker">活動管理</div><h2 id="v21ActivityTitle">新增活動</h2>
+<form id="v21ActivityForm">
+<input name="activity_id" type="hidden"/>
+<label>活動名稱<input name="name" placeholder="例如：嘉明湖 3D2N" required=""/></label>
+<div class="grid"><label>開始日期<input name="start_date" required="" type="date"/></label><label>結束日期<input name="end_date" required="" type="date"/></label></div>
+<label>活動代碼<input name="slug" placeholder="可留空，自動產生"/></label>
+<label>活動說明<textarea name="description" placeholder="行程、集合資訊、注意事項…" rows="5"></textarea></label>
+<label class="gearChoice"><input checked="" name="show_on_home" type="checkbox"/> 顯示在首頁</label>
+<button class="block" type="submit">儲存活動</button>
+</form>
+</div>
+</div><div aria-modal="true" class="v20Overlay" id="v21ArticleModal" role="dialog">
+<div class="v20Modal v21FormModal">
+<button class="ghost v21ModalClose" type="button">✕</button>
+<div class="kicker">文章管理</div><h2 id="v21ArticleTitle">新增文章</h2>
+<form id="v21ArticleForm">
+<input name="article_id" type="hidden"/>
+<label>標題<input name="title" required=""/></label>
+<label>分類<select name="category"><option>行程分享</option><option>裝備</option><option>安全</option><option>路況</option><option>其他</option></select></label>
+<label>網址<input name="url" placeholder="https://…" type="url"/></label>
+<label>簡短說明<textarea name="content" rows="5"></textarea></label>
+<label>文章照片（最多 2 張；選新照片會取代舊照片）<input accept="image/jpeg,image/png,image/webp" id="v22AdminArticleImages" multiple="" type="file"/></label>
+<div class="v22UploadPreview" id="v22AdminArticlePreview"></div>
+<label class="gearChoice"><input name="pinned" type="checkbox"> 置頂</input></label>
+<button class="block" type="submit">儲存文章</button>
+</form>
+</div>
+</div><script>
 (function(){
   const sb=window.APP_DB||null; const $id=id=>document.getElementById(id);
   const trigger=$id('v20AdminTrigger'), login=$id('v20AdminLogin'), center=$id('v20AdminCenter');
@@ -1673,7 +1776,7 @@ document.addEventListener('click', function(e){
         </div>
       </div>`).join(''):'<div class="muted">目前沒有活動。</div>';
     $id('v20AdminArticles').innerHTML=arts.length?arts.map(x=>`
-      <div class="v20AdminRow"><div class="v20AdminRowHead"><div><b>${escAdmin(x.title)}</b><div class="small muted">${escAdmin(x.category||'其他')}</div></div>${x.pinned?'<span class="v20Status on">置頂</span>':''}</div>
+      <div class="v20AdminRow"><div class="v20AdminRowHead"><div>${Array.isArray(x.image_urls)&&x.image_urls[0]?`<img src="${escAdmin(x.image_urls[0])}" alt="" style="width:76px;height:52px;object-fit:cover;border-radius:9px;margin-bottom:7px">`:''}<b>${escAdmin(x.title)}</b><div class="small muted">${escAdmin(x.category||'其他')}</div></div>${x.pinned?'<span class="v20Status on">置頂</span>':''}</div>
       ${x.url?`<div class="small"><a href="${escAdmin(x.url)}" target="_blank" rel="noopener">開啟來源 ↗</a></div>`:''}
       <div class="v20AdminActions"><button class="ghost" type="button" data-art="${x.id}" data-edit-article="1">修改</button><button class="ghost" type="button" data-art="${x.id}" data-art-action="toggle_pin">${x.pinned?'取消置頂':'置頂'}</button><button class="v20Danger" type="button" data-art="${x.id}" data-art-action="delete">刪除</button></div></div>`).join(''):'<div class="muted">目前沒有公共文章。</div>';
 
@@ -1711,7 +1814,7 @@ document.addEventListener('click', function(e){
     const f=$id('v21ActivityForm');f.reset();f.activity_id.value='';$id('v21ActivityTitle').textContent='新增活動';actModal.classList.add('open');
   };
   if($id('v21AdminCreateArticle'))$id('v21AdminCreateArticle').onclick=()=>{
-    const f=$id('v21ArticleForm');f.reset();f.article_id.value='';$id('v21ArticleTitle').textContent='新增文章';artModal.classList.add('open');
+    const f=$id('v21ArticleForm');f.reset();f.article_id.value='';window.__v22EditingArticleImages=[];if($id('v22AdminArticlePreview'))$id('v22AdminArticlePreview').innerHTML='';$id('v21ArticleTitle').textContent='新增文章';artModal.classList.add('open');
   };
   $id('v21ActivityForm').onsubmit=async e=>{
     e.preventDefault();const f=new FormData(e.target);
@@ -1721,8 +1824,10 @@ document.addEventListener('click', function(e){
   };
   $id('v21ArticleForm').onsubmit=async e=>{
     e.preventDefault();const f=new FormData(e.target);
-    const payload={id:f.get('article_id')||null,title:f.get('title'),category:f.get('category'),url:f.get('url'),content:f.get('content'),pinned:f.get('pinned')==='on'};
-    const {error}=await sb.rpc('v21_admin_save_article',{p_token:adminToken,p_payload:payload});
+    const chosen=$id('v22AdminArticleImages')?.files||[];
+    const imageUrls=chosen.length?await window.uploadArticleImages(chosen):(window.__v22EditingArticleImages||[]);
+    const payload={id:f.get('article_id')||null,title:f.get('title'),category:f.get('category'),url:f.get('url'),content:f.get('content'),pinned:f.get('pinned')==='on',image_urls:imageUrls};
+    const {error}=await sb.rpc('v22_admin_save_article',{p_token:adminToken,p_payload:payload});
     if(error)return alert(error.message);artModal.classList.remove('open');await loadAdmin();if(window.renderPublicArticles)window.renderPublicArticles();
   };
 
@@ -1743,40 +1848,24 @@ document.addEventListener('click', function(e){
     if(editArt){
       const x=(window.__v20Arts||[]).find(v=>String(v.id)===String(editArt.dataset.art));if(!x)return;
       const f=$id('v21ArticleForm');f.article_id.value=x.id;f.title.value=x.title||'';f.category.value=x.category||'其他';f.url.value=x.url||'';f.content.value=x.content||'';f.pinned.checked=!!x.pinned;
+      window.__v22EditingArticleImages=Array.isArray(x.image_urls)?x.image_urls.slice(0,2):[];
+      if($id('v22AdminArticleImages'))$id('v22AdminArticleImages').value='';
+      if($id('v22AdminArticlePreview'))$id('v22AdminArticlePreview').innerHTML=window.__v22EditingArticleImages.map(u=>`<img src="${escAdmin(u)}" alt="文章照片">`).join('');
       $id('v21ArticleTitle').textContent='修改文章';artModal.classList.add('open');
     }
   });
   $id('v20AdminRefresh').onclick=loadAdmin;
 })();
 </script>
-<div aria-modal="true" class="v20Overlay" id="v21ActivityModal" role="dialog">
-<div class="v20Modal v21FormModal">
-<button class="ghost v21ModalClose" type="button">✕</button>
-<div class="kicker">活動管理</div><h2 id="v21ActivityTitle">新增活動</h2>
-<form id="v21ActivityForm">
-<input name="activity_id" type="hidden"/>
-<label>活動名稱<input name="name" placeholder="例如：嘉明湖 3D2N" required=""/></label>
-<div class="grid"><label>開始日期<input name="start_date" required="" type="date"/></label><label>結束日期<input name="end_date" required="" type="date"/></label></div>
-<label>活動代碼<input name="slug" placeholder="可留空，自動產生"/></label>
-<label>活動說明<textarea name="description" placeholder="行程、集合資訊、注意事項…" rows="5"></textarea></label>
-<label class="gearChoice"><input checked="" name="show_on_home" type="checkbox"/> 顯示在首頁</label>
-<button class="block" type="submit">儲存活動</button>
-</form>
+
+
+<div aria-label="文章內容" aria-modal="true" class="v22ArticleDetail" id="v22ArticleDetail" role="dialog">
+<div class="v22ArticlePage">
+<div class="v22ArticleTop">
+<button class="ghost" id="v22ArticleBack" type="button">← 返回</button>
+<span class="small muted">登山文章／分享</span>
 </div>
-</div>
-<div aria-modal="true" class="v20Overlay" id="v21ArticleModal" role="dialog">
-<div class="v20Modal v21FormModal">
-<button class="ghost v21ModalClose" type="button">✕</button>
-<div class="kicker">文章管理</div><h2 id="v21ArticleTitle">新增文章</h2>
-<form id="v21ArticleForm">
-<input name="article_id" type="hidden"/>
-<label>標題<input name="title" required=""/></label>
-<label>分類<select name="category"><option>行程分享</option><option>裝備</option><option>安全</option><option>路況</option><option>其他</option></select></label>
-<label>網址<input name="url" placeholder="https://…" type="url"/></label>
-<label>簡短說明<textarea name="content" rows="5"></textarea></label>
-<label class="gearChoice"><input name="pinned" type="checkbox"/> 置頂</label>
-<button class="block" type="submit">儲存文章</button>
-</form>
+<div id="v22ArticleDetailBody"></div>
 </div>
 </div>
 </body>
