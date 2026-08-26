@@ -1251,7 +1251,7 @@ $('#createForm').addEventListener('submit',async ev=>{
  try{
   const total=Math.max(1,+(f.get('total_people')||1));
   const coverImage=await compressImage(f.get('cover'));
-  const payload={name:norm(f.get('name')),start:f.get('start'),end:f.get('end'),cutoff:f.get('cutoff')||null,total_people:total,itinerary:norm(f.get('itinerary')),admin_password:String(f.get('admin_password')||''),mountain_area:norm(f.get('mountain_area')),mountain_name:norm(f.get('mountain_name')),required_gear:selectedGear('#createGearPicker',createCustomGears),cover_image:coverImage||null,show_on_home:f.get('show_on_home')==='on',meeting_at:f.get('meeting_at')||null,meeting_place:norm(f.get('meeting_place')),lodging_type:norm(f.get('lodging_type')),expected_down_at:f.get('expected_down_at')||null,trip_note:norm(f.get('trip_note')),fees:formFees(f,total)};
+  const payload={name:norm(f.get('name')),start:f.get('start'),end:f.get('end'),cutoff:f.get('cutoff')||null,total_people:total,itinerary:norm(f.get('itinerary')),admin_password:String(f.get('admin_password')||'').trim(),mountain_area:norm(f.get('mountain_area')),mountain_name:norm(f.get('mountain_name')),required_gear:selectedGear('#createGearPicker',createCustomGears),cover_image:coverImage||null,show_on_home:f.get('show_on_home')==='on',meeting_at:f.get('meeting_at')||null,meeting_place:norm(f.get('meeting_place')),lodging_type:norm(f.get('lodging_type')),expected_down_at:f.get('expected_down_at')||null,trip_note:norm(f.get('trip_note')),fees:formFees(f,total)};
   const {data,error}=await sb.rpc('v17_create_activity',{p_payload:payload});
   if(error)throw error;
   currentSlug=data.slug; remember(currentSlug);
@@ -1812,6 +1812,7 @@ document.addEventListener('click', function(e){
           <button type="button" class="ghost" data-a="${a.id}" data-action="toggle_cancel">${a.cancelled?'恢復活動':'取消活動'}</button>
           <button type="button" class="ghost" data-slug="${escAdmin(a.slug)}" data-open="activity">參加者／費用</button>
           <button type="button" class="ghost" data-slug="${escAdmin(a.slug)}" data-edit-activity="1">修改活動</button>
+          <button type="button" class="ghost" data-a="${a.id}" data-reset-activity-password="1">重設活動密碼</button>
           <button type="button" class="v20Danger" data-a="${a.id}" data-delete-activity="1">刪除活動</button>
         </div>
       </div>`).join(''):'<div class="muted">目前沒有活動。</div>';
@@ -1877,6 +1878,24 @@ document.addEventListener('click', function(e){
       const a=(window.__v20Acts||[]).find(x=>x.slug===editA.dataset.slug);if(!a)return;
       const f=$id('v21ActivityForm');f.activity_id.value=a.id;f.name.value=a.name||'';f.slug.value=a.slug||'';f.start_date.value=a.start_date||'';f.end_date.value=a.end_date||'';f.description.value=a.description||'';f.show_on_home.checked=!!a.show_on_home;
       $id('v21ActivityTitle').textContent='修改活動';actModal.classList.add('open');return;
+    }
+    const resetPw=e.target.closest('[data-reset-activity-password]');
+    if(resetPw){
+      const pw=prompt('輸入新的活動管理密碼：');
+      if(pw===null)return;
+      const clean=String(pw).trim();
+      if(clean.length<4)return alert('活動管理密碼至少 4 個字元');
+      const again=prompt('再次輸入新的活動管理密碼：');
+      if(again===null)return;
+      if(String(again).trim()!==clean)return alert('兩次輸入的密碼不一致');
+      const {error}=await sb.rpc('v26_admin_reset_activity_password',{
+        p_token:adminToken,
+        p_activity_id:resetPw.dataset.a,
+        p_new_password:clean
+      });
+      if(error)return alert(error.message);
+      alert('活動管理密碼已重設');
+      return;
     }
     const delA=e.target.closest('[data-delete-activity]');
     if(delA){
