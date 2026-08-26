@@ -1309,7 +1309,18 @@ window.requestManage=async slug=>{
   if(error)return alert(error.message);
   if(!data||!data.activity)return alert('活動管理資料讀取失敗');
   currentSlug=slug;currentPassword=cleanPw;currentSnapshot=data;
-  renderManage();show('manageView');
+
+  // 核心：驗證成功就先進管理頁，不讓任何次要區塊 render 錯誤把「管理活動」整顆按鈕拖死。
+  show('manageView');
+  try{
+    renderManage();
+  }catch(renderErr){
+    console.error('管理頁部分內容載入失敗',renderErr);
+    $('#manageTitle').textContent=data?.activity?.name||'活動管理';
+    const box=$('#manageSummary');
+    if(box)box.innerHTML='<div class="notice">活動管理已登入，但部分欄位載入失敗。其他可用功能仍可操作。</div>';
+    alert('已進入活動管理；部分欄位載入失敗：'+(renderErr?.message||renderErr));
+  }
  }catch(e){
   console.error('開啟活動管理失敗',e);
   alert('開啟活動管理失敗：'+(e?.message||e));
@@ -1322,9 +1333,9 @@ function renderManageExtraFees(fees){
  $$('.mExtraDelete').forEach(b=>b.onclick=()=>{manageExtraFeeDrafts=readExtra('#manageExtraFees','mExtra');manageExtraFeeDrafts.splice(+b.dataset.i,1);renderManageExtraFees(manageExtraFeeDrafts.map(x=>({name:x.name,total_amount:x.total,split_count:x.split,note:x.note})))});
 }
 function renderManage(){
- const s=currentSnapshot,a=s.activity,ps=s.participants||[],fees=s.fees||[];
+ const s=currentSnapshot||{},a=s.activity||{},ps=Array.isArray(s.participants)?s.participants:[],fees=Array.isArray(s.fees)?s.fees:[];
  $('#manageTitle').textContent=a.name;$('#mName').value=a.name;$('#mMeetingAt').value=a.meeting_at?String(a.meeting_at).slice(0,16):'';$('#mMeetingPlace').value=a.meeting_place||'';$('#mLodgingType').value=a.lodging_type||'';$('#mExpectedDownAt').value=a.expected_down_at?String(a.expected_down_at).slice(0,16):'';$('#mTripNote').value=a.trip_note||'';$('#mShowHome').checked=a.show_on_home!==false;$('#coverPreview').innerHTML=a.cover_image?`<div class="photoPreview"><img src="${esc(a.cover_image)}" alt="活動封面"></div>`:'<div class="muted small">目前沒有封面照片。</div>';$('#mStart').value=a.start_date;$('#mEnd').value=a.end_date;$('#mCutoff').value=a.cutoff_at?String(a.cutoff_at).slice(0,16):'';$('#mTotalPeople').value=a.total_people||1;
- $('#manageCountdown').innerHTML=`<div class="notice"><b>${countdownText(a.start_date)}</b></div>`;$('#mMountainArea').innerHTML=mountainOptions(a.mountain_area||'');$('#mMountainName').value=a.mountain_name||'';manageCustomGears=(a.required_gear||[]).filter(g=>!GEAR_PRESETS.includes(g));renderGearPicker('#manageGearPicker',a.required_gear||[]);renderCustom('#manageCustomGearList',manageCustomGears);renderManageArticles(s.articles||[]);
+ $('#manageCountdown').innerHTML=`<div class="notice"><b>${countdownText(a.start_date)}</b></div>`;$('#mMountainArea').innerHTML=mountainOptions(a.mountain_area||'');$('#mMountainName').value=a.mountain_name||'';const safeRequiredGear=Array.isArray(a.required_gear)?a.required_gear:[];manageCustomGears=safeRequiredGear.filter(g=>!GEAR_PRESETS.includes(g));renderGearPicker('#manageGearPicker',safeRequiredGear);renderCustom('#manageCustomGearList',manageCustomGears);renderManageArticles(Array.isArray(s.articles)?s.articles:[]);
  $('#toggleOpen').textContent=a.cancelled?'活動已取消':(a.registration_open?'手動關閉報名':'重新開放報名');$('#toggleOpen').disabled=!!a.cancelled;
  $('#toggleCancel').textContent=a.cancelled?'恢復此活動':'⛔ 取消活動';$('#toggleLock').textContent=a.data_locked?'解除修改鎖定':'鎖定隊員修改';
  const paid=ps.filter(p=>p.payment_status==='已付款').length;
@@ -1337,7 +1348,7 @@ function renderManage(){
  $('#pLodging').innerHTML=`每人約 <b>${money(calc(L))}</b>`;$('#pTransport').innerHTML=`每人約 <b>${money(calc(T))}</b>`;$('#pMeal').innerHTML=`每人約 <b>${money(calc(M))}</b>`;$('#pOther').innerHTML=`每人約 <b>${money(calc(O))}</b>`;
  $('#memberRows').innerHTML=ps.length?ps.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.birth_date||'')}</td><td>${esc(p.id_number||'')}</td><td>${esc(p.phone||'')}</td><td>${esc(p.emergency_name||'')}</td><td>${esc(p.emergency_phone||'')}</td><td>${money(p.amount_due||0)}</td><td><span>${esc(p.payment_status||'未付款')}</span><br><button class="ghost" onclick="togglePaid('${p.id}','${p.payment_status==='已付款'?'未付款':'已付款'}')">${p.payment_status==='已付款'?'改未付款':'標記已付款'}</button></td></tr>`).join(''):'<tr><td colspan="8">目前尚無資料</td></tr>';
  $('#applicationData').innerHTML=ps.length?ps.map((p,i)=>`<div class="personCard"><div class="kicker">${i+1} / ${ps.length}</div><h3>${esc(p.name)}</h3><div>生日：${esc(p.birth_date||'—')}</div><div>身分證：${esc(p.id_number||'—')}</div><div>電話：${esc(p.phone||'—')}</div><div>緊急聯絡人：${esc(p.emergency_name||'—')} ${esc(p.emergency_phone||'')}</div></div>`).join(''):'<div class="muted">目前尚無報名資料。</div>';
- $('#history').innerHTML=(s.logs||[]).map(l=>`<div class="log"><span class="muted small">${new Date(l.created_at).toLocaleString('zh-TW')}</span><br>${esc(l.detail)}</div>`).join('')||'<div class="muted">尚無修改紀錄</div>';
+ $('#history').innerHTML=(Array.isArray(s.logs)?s.logs:[]).map(l=>`<div class="log"><span class="muted small">${new Date(l.created_at).toLocaleString('zh-TW')}</span><br>${esc(l.detail)}</div>`).join('')||'<div class="muted">尚無修改紀錄</div>';
 }
 
 function renderManageArticles(items){
