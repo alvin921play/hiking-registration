@@ -1,8 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>登山報名資料</title>
 <style>
 *{box-sizing:border-box}
@@ -275,7 +276,7 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 .homeSection{margin-top:34px}
 .homeSectionHead{margin-bottom:14px}
 .homeSectionHead h2{font-size:24px}
-.homeToolCard,#home文章管理.card{border:1px solid #ddd7c9!important;box-shadow:none!important;border-radius:18px;background:rgba(255,253,247,.86)}
+.homeToolCard,#homeArticles.card{border:1px solid #ddd7c9!important;box-shadow:none!important;border-radius:18px;background:rgba(255,253,247,.86)}
 .homeTripCard{border:1px solid #d8d1c3!important;box-shadow:0 8px 24px rgba(42,51,43,.08)!important;border-radius:18px}
 .homeTripCard:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(42,51,43,.12)!important}
 .homeTripCover{border-radius:17px 17px 0 0}
@@ -444,7 +445,6 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 .v21FormModal{margin-top:5vh}.v21FormModal .v21ModalClose{position:absolute;right:16px;top:14px}
 
 </style>
-
 <style>
 .prepGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
 .prepCard{border:1px solid var(--line,#d9ddd9);border-radius:18px;padding:16px;background:rgba(255,255,255,.72)}
@@ -461,450 +461,408 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 .climateNote{font-size:13px;opacity:.72}
 @media(max-width:720px){.prepGrid,.gearPicker{grid-template-columns:1fr}}
 </style>
-
 </head>
 <body>
 <main class="wrap">
-  <div class="top"><div class="brand">△ 登山報名</div><span class="badge">免登入／測試</span></div>
-
-  <section class="hero">
-    <div class="kicker">戶外活動系統</div>
-    <h1>HIKING<br>活動報名</h1>
-    <p>建立活動、分享報名網址、收集與管理隊員資料。</p>
-  </section>
-
-  <section id="managerView">
-<div id="homeLauncher">
-  <div class="launchGrid">
-    <div class="launchCard primary"><div class="launchIcon">🏕</div><div class="kicker">活動報名</div><h2>我要報名</h2><p class="muted">直接選擇想參加的活動，查看行程資訊並完成報名。</p><button type="button" id="goJoin">選擇活動</button></div>
-    <div class="launchCard"><div class="launchIcon">🔒</div><div class="kicker">領隊</div><h2>活動管理</h2><p class="muted">查看既有活動，輸入該活動自己的管理密碼。</p><button type="button" class="secondary" id="goManage">查看活動</button></div>
-    <div class="launchCard"><div class="launchIcon">＋</div><div class="kicker">新增活動</div><h2>建立新活動</h2><p class="muted">只有這次活動的建立者／領隊才需要按這裡。</p><button type="button" class="ghost" id="goCreate">建立新活動</button></div>
-  </div>
-
-
-<section id="publicHomeContent" class="v194Home">
-  <div class="v194Hero" id="v20AdminTrigger" title="">
-    <div class="v194HeroCopy">
-      <div class="kicker">戶外活動系統</div>
-      <h2>看風景充電中。</h2>
-      <p>活動、氣候、裝備與行前資訊放在同一頁。山還在，先把自己準備好。</p>
-    </div>
-  </div>
-
-  <div class="v194Grid">
-    <article class="v194Card">
-      <div class="v194Head"><div><div class="kicker">近期活動</div><h2>🏔️ 近期活動</h2></div><span>點卡片查看</span></div>
-      <div id="homeActivities"><div class="homeEmpty">讀取活動中…</div></div>
-    </article>
-
-    <article class="v194Card">
-      <div class="v194Head"><div><div class="kicker">山區氣候</div><h2>🌡️ 熱門山區氣候</h2></div></div>
-      <div class="grid">
-        <label>山區<select id="homeMountainArea"></select></label>
-        <label>月份<select id="homeClimateMonth"></select></label>
-      </div>
-      <div id="homeClimateResult" class="homeClimateResult muted">選擇山區與月份後顯示溫度參考。</div>
-    </article>
-
-    <article class="v194Card">
-      <div class="v194Head"><div><div class="kicker">裝備檢查</div><h2>🎒 登山裝備自檢</h2></div></div>
-      <div class="grid">
-        <label>行程類型<select id="homeChecklistType"><option value="day">一日行程</option><option value="overnight">兩天一夜</option><option value="multi">三天兩夜以上</option></select></label>
-        <label>搜尋裝備<input id="v19GearSearch" placeholder="頭燈、雨衣、瓦斯…"></label>
-      </div>
-      <div id="v19GearProgress"></div>
-      <div class="v194Actions">
-        <button type="button" id="v194GearToggle" onclick="document.getElementById('v195GearPage').classList.add('open');document.body.classList.add('v195NoScroll')">開始檢查</button>
-        <button type="button" class="ghost" id="resetHomeChecklist" onclick="var t=document.getElementById('homeChecklistType');localStorage.removeItem('hiking-v19-gear-'+(t?t.value:'day'));if(typeof homeChecklistRender==='function')homeChecklistRender();">清除勾選</button>
-      </div>
-      <div class="small muted" style="margin-top:10px">完整 122 項清單會在獨立檢查頁開啟。</div>
-    </article>
-
-    <article class="v194Card">
-      <div class="v194Head"><div><div class="kicker">登山文章／分享</div><h2>📚 登山文章／分享</h2></div><button type="button" class="ghost v195MiniBtn" onclick="document.getElementById('v195ArticleModal').classList.add('open')">＋ 新增分享</button></div>
-      <div id="home文章管理"><div class="muted">目前還沒有公開文章。</div></div>
-    </article>
-
-    <article class="v194Card">
-      <div class="v194Head"><div><div class="kicker">快速功能</div><h2>🧭 快速功能</h2></div></div>
-      <div class="v194QuickGrid">
-        <button type="button" class="v194Quick" id="v194Create" onclick="document.getElementById('goCreate')?.click()"><b>＋ 建立活動</b><span>新增一場登山活動</span></button>
-        <button type="button" class="v194Quick" id="v194Manage" onclick="document.getElementById('homeActivities')?.scrollIntoView({behavior:'smooth',block:'center'});alert('請從近期活動點選要管理的活動。活動代碼已改為系統內部使用。')"><b>🔒 活動管理</b><span>名單、費用與活動設定</span></button>
-        <button type="button" class="v194Quick" id="v194GearJump" onclick="document.getElementById('homeChecklistType')?.scrollIntoView({behavior:'smooth',block:'center'})"><b>🎒 裝備檢查</b><span>快速跳到自檢工具</span></button>
-        <button type="button" class="v194Quick" id="v194ClimateJump" onclick="document.getElementById('homeMountainArea')?.scrollIntoView({behavior:'smooth',block:'center'})"><b>🌡️ 氣候參考</b><span>查看月份溫度</span></button>
-      </div>
-    </article>
-
-    <article class="v194Card">
-      <div class="v194Head"><div><div class="kicker">出發前確認</div><h2>📋 行前小提醒</h2></div></div>
-      <div class="v194Ticker" id="v194Ticker">
-        <div class="v194TickerIcon" id="v194TickerIcon">☁️</div>
-        <div class="v194TickerText">
-          <b id="v194TickerTitle">出發前再確認最新氣象</b>
-          <span id="v194TickerBody">月份資料是歷史參考，不取代最新預報。</span>
-        </div>
-        <div class="v194TickerCount" id="v194TickerCount">1 / 8</div>
-      </div>
-    </article>
-  </div>
-
-
-  <div id="v195GearPage" class="v195Overlay" role="dialog" aria-modal="true" aria-label="登山裝備自檢">
-    <div class="v195Panel v195GearPanel">
-      <div class="v195PanelHead">
-        <div><div class="kicker">裝備檢查</div><h2>🎒 登山裝備自檢</h2><p>完整清單獨立檢查，首頁就不用一路滑到下輩子。</p></div>
-        <button type="button" class="ghost" onclick="document.getElementById('v195GearPage').classList.remove('open');document.body.classList.remove('v195NoScroll')">✕ 關閉</button>
-      </div>
-      <div class="v195GearTools">
-        <label>行程類型
-          <select id="v195GearType">
-            <option value="day">一日行程</option><option value="overnight">兩天一夜</option><option value="multi">三天兩夜以上</option>
-          </select>
-        </label>
-        <label>搜尋裝備<input id="v195GearSearch" placeholder="例如：頭燈、雨衣、瓦斯"></label>
-        <label class="gearChoice"><input type="checkbox" id="v195RequiredOnly"> 只看基本必備</label>
-        <label class="gearChoice"><input type="checkbox" id="v195MissingOnly"> 只看未完成</label>
-      </div>
-      <div id="v195GearProgress" class="v195GearProgress"></div>
-      <div class="v195GearActions">
-        <button type="button" class="ghost" id="v195ExpandAll">全部展開</button>
-        <button type="button" class="ghost" id="v195CollapseAll">全部收合</button>
-        <button type="button" class="ghost" id="v195ClearGear">清除目前勾選</button>
-      </div>
-      <div id="homeChecklist"></div>
-    </div>
-  </div>
-
-  <div id="v195ArticleModal" class="v195Overlay" role="dialog" aria-modal="true" aria-label="新增登山分享">
-    <div class="v195Panel v195ArticlePanel">
-      <div class="v195PanelHead">
-        <div><div class="kicker">登山文章／分享</div><h2>📚 新增登山分享</h2><p>貼外部文章、YouTube、健行筆記，或直接寫一段自己的內容。按下發布就完成。</p></div>
-        <button type="button" class="ghost" onclick="document.getElementById('v195ArticleModal').classList.remove('open')">✕ 關閉</button>
-      </div>
-      <div class="notice">這裡是首頁公共分享區。貼連結或自己寫一段內容都可以。</div>
-      <div class="grid">
-        <label>標題<input id="v195ArticleTitle" placeholder="例如：嘉明湖近期路況"></label>
-        <label>分類<select id="v195ArticleCategory"><option>行前必讀</option><option>裝備</option><option>路線資訊</option><option>交通／集合</option><option>其他</option></select></label>
-      </div>
-      <label>網址（可不填）<input id="v195ArticleUrl" type="url" placeholder="https://..."></label>
-      <label>簡短說明<textarea id="v195ArticleContent" rows="4" placeholder="寫一兩句重點；若是自己寫的內容，也可以只填這裡、不貼網址。"></textarea></label>
-      <div class="small muted">置頂與刪除由站長管理中心處理。</div>
-      <div class="v195ArticleActions"><button type="button" id="v195ArticleSubmit">發布分享</button></div>
-    </div>
-  </div>
-
-  <div class="v194BearStrip" aria-hidden="true">
-    <div class="v194Bubble v194BubbleLeft" id="bearTalkLeft">嗨，又要去爬山了嗎？</div>
-    
-<svg class="v194Mascot v194Walk" viewBox="0 0 120 120" aria-hidden="true">
- <circle cx="37" cy="29" r="14" fill="#242820"/><circle cx="79" cy="29" r="14" fill="#242820"/>
- <ellipse cx="59" cy="60" rx="38" ry="41" fill="#242820"/>
- <ellipse cx="59" cy="57" rx="25" ry="23" fill="#34392f"/>
- <ellipse cx="59" cy="67" rx="17" ry="13" fill="#d9c69e"/>
- <circle cx="48" cy="51" r="3.4" fill="#fff"/><circle cx="70" cy="51" r="3.4" fill="#fff"/>
- <circle cx="59" cy="62" r="4.2" fill="#111"/><path d="M52 73 Q59 79 66 73" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round"/>
- <ellipse cx="43" cy="64" rx="3.2" ry="1.5" fill="#ee8a8a"/><ellipse cx="75" cy="64" rx="3.2" ry="1.5" fill="#ee8a8a"/>
- <rect x="13" y="43" width="24" height="35" rx="8" fill="#4e674f"/>
- <path d="M29 38 Q16 55 24 84" fill="none" stroke="#b89b52" stroke-width="4"/>
- <path d="M39 21 Q58 10 79 21" fill="#c9b58a" stroke="#6b5a39" stroke-width="2"/>
- <path d="M26 50 Q13 59 20 80" fill="none" stroke="#242820" stroke-width="11" stroke-linecap="round"/>
- <path d="M91 51 Q104 60 97 81" fill="none" stroke="#242820" stroke-width="11" stroke-linecap="round"/>
- <path d="M43 92 L36 109" stroke="#242820" stroke-width="12" stroke-linecap="round"/>
- <path d="M74 92 L81 109" stroke="#242820" stroke-width="12" stroke-linecap="round"/>
-</svg>
-
-    <div class="v194Bubble v194BubbleRight" id="bearTalkRight">我先坐一下，你慢慢準備。</div>
-    
-<svg class="v194Mascot v194Sit" viewBox="0 0 120 120" aria-hidden="true">
- <circle cx="38" cy="31" r="13" fill="#242820"/><circle cx="78" cy="31" r="13" fill="#242820"/>
- <ellipse cx="59" cy="63" rx="39" ry="42" fill="#242820"/>
- <ellipse cx="59" cy="59" rx="24" ry="22" fill="#34392f"/>
- <ellipse cx="59" cy="70" rx="17" ry="13" fill="#d9c69e"/>
- <circle cx="49" cy="54" r="3.3" fill="#fff"/><circle cx="69" cy="54" r="3.3" fill="#fff"/>
- <circle cx="59" cy="65" r="4.1" fill="#111"/><path d="M52 75 Q59 80 66 75" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
- <ellipse cx="43" cy="67" rx="3.2" ry="1.5" fill="#ee8a8a"/><ellipse cx="75" cy="67" rx="3.2" ry="1.5" fill="#ee8a8a"/>
- <ellipse cx="37" cy="101" rx="18" ry="10" fill="#242820"/><ellipse cx="82" cy="101" rx="18" ry="10" fill="#242820"/>
- <rect x="18" y="46" width="21" height="31" rx="7" fill="#4e674f"/>
- <rect x="79" y="76" width="17" height="18" rx="5" fill="#d6c3a0" stroke="#5f5849" stroke-width="2"/>
- <path d="M96 80 Q105 82 101 89 Q99 93 95 90" fill="none" stroke="#5f5849" stroke-width="2"/>
-</svg>
-
-  </div>
+<div class="top"><div class="brand">△ 登山報名</div><span class="badge">免登入／測試</span></div>
+<section class="hero">
+<div class="kicker">戶外活動系統</div>
+<h1>HIKING<br/>活動報名</h1>
+<p>建立活動、分享報名網址、收集與管理隊員資料。</p>
 </section>
-
-
+<section id="managerView">
+<div id="homeLauncher">
+<div class="launchGrid">
+<div class="launchCard primary"><div class="launchIcon">🏕</div><div class="kicker">活動報名</div><h2>我要報名</h2><p class="muted">直接選擇想參加的活動，查看行程資訊並完成報名。</p><button id="goJoin" type="button">選擇活動</button></div>
+<div class="launchCard"><div class="launchIcon">🔒</div><div class="kicker">領隊</div><h2>活動管理</h2><p class="muted">查看既有活動，輸入該活動自己的管理密碼。</p><button class="secondary" id="goManage" type="button">查看活動</button></div>
+<div class="launchCard"><div class="launchIcon">＋</div><div class="kicker">新增活動</div><h2>建立新活動</h2><p class="muted">只有這次活動的建立者／領隊才需要按這裡。</p><button class="ghost" id="goCreate" type="button">建立新活動</button></div>
 </div>
-<div id="joinHelp" class="hidden"><div class="card">
-<button type="button" class="ghost homeReturn" onclick="location.assign(location.pathname)">← 返回</button>
+<section class="v194Home" id="publicHomeContent">
+<div class="v194Hero" id="v20AdminTrigger" title="">
+<div class="v194HeroCopy">
+<div class="kicker">戶外活動系統</div>
+<h2>看風景充電中。</h2>
+<p>活動、氣候、裝備與行前資訊放在同一頁。山還在，先把自己準備好。</p>
+</div>
+</div>
+<div class="v194Grid">
+<article class="v194Card">
+<div class="v194Head"><div><div class="kicker">近期活動</div><h2>🏔️ 近期活動</h2></div><span>點卡片查看</span></div>
+<div id="homeActivities"><div class="homeEmpty">讀取活動中…</div></div>
+</article>
+<article class="v194Card">
+<div class="v194Head"><div><div class="kicker">山區氣候</div><h2>🌡️ 熱門山區氣候</h2></div></div>
+<div class="grid">
+<label>山區<select id="homeMountainArea"></select></label>
+<label>月份<select id="homeClimateMonth"></select></label>
+</div>
+<div class="homeClimateResult muted" id="homeClimateResult">選擇山區與月份後顯示溫度參考。</div>
+</article>
+<article class="v194Card">
+<div class="v194Head"><div><div class="kicker">裝備檢查</div><h2>🎒 登山裝備自檢</h2></div></div>
+<div class="grid">
+<label>行程類型<select id="homeChecklistType"><option value="day">一日行程</option><option value="overnight">兩天一夜</option><option value="multi">三天兩夜以上</option></select></label>
+<label>搜尋裝備<input id="v19GearSearch" placeholder="頭燈、雨衣、瓦斯…"/></label>
+</div>
+<div id="v19GearProgress"></div>
+<div class="v194Actions">
+<button id="v194GearToggle" onclick="document.getElementById('v195GearPage').classList.add('open');document.body.classList.add('v195NoScroll')" type="button">開始檢查</button>
+<button class="ghost" id="resetHomeChecklist" onclick="var t=document.getElementById('homeChecklistType');localStorage.removeItem('hiking-v19-gear-'+(t?t.value:'day'));if(typeof homeChecklistRender==='function')homeChecklistRender();" type="button">清除勾選</button>
+</div>
+<div class="small muted" style="margin-top:10px">完整 122 項清單會在獨立檢查頁開啟。</div>
+</article>
+<article class="v194Card">
+<div class="v194Head"><div><div class="kicker">登山文章／分享</div><h2>📚 登山文章／分享</h2></div><button class="ghost v195MiniBtn" onclick="document.getElementById('v195ArticleModal').classList.add('open')" type="button">＋ 新增分享</button></div>
+<div id="homeArticles"><div class="muted">目前還沒有公開文章。</div></div>
+</article>
+<article class="v194Card">
+<div class="v194Head"><div><div class="kicker">快速功能</div><h2>🧭 快速功能</h2></div></div>
+<div class="v194QuickGrid">
+<button class="v194Quick" id="v194Create" onclick="document.getElementById('goCreate')?.click()" type="button"><b>＋ 建立活動</b><span>新增一場登山活動</span></button>
+<button class="v194Quick" id="v194Manage" onclick="document.getElementById('homeActivities')?.scrollIntoView({behavior:'smooth',block:'center'});alert('請從近期活動點選要管理的活動。活動代碼已改為系統內部使用。')" type="button"><b>🔒 活動管理</b><span>名單、費用與活動設定</span></button>
+<button class="v194Quick" id="v194GearJump" onclick="document.getElementById('homeChecklistType')?.scrollIntoView({behavior:'smooth',block:'center'})" type="button"><b>🎒 裝備檢查</b><span>快速跳到自檢工具</span></button>
+<button class="v194Quick" id="v194ClimateJump" onclick="document.getElementById('homeMountainArea')?.scrollIntoView({behavior:'smooth',block:'center'})" type="button"><b>🌡️ 氣候參考</b><span>查看月份溫度</span></button>
+</div>
+</article>
+<article class="v194Card">
+<div class="v194Head"><div><div class="kicker">出發前確認</div><h2>📋 行前小提醒</h2></div></div>
+<div class="v194Ticker" id="v194Ticker">
+<div class="v194TickerIcon" id="v194TickerIcon">☁️</div>
+<div class="v194TickerText">
+<b id="v194TickerTitle">出發前再確認最新氣象</b>
+<span id="v194TickerBody">月份資料是歷史參考，不取代最新預報。</span>
+</div>
+<div class="v194TickerCount" id="v194TickerCount">1 / 8</div>
+</div>
+</article>
+</div>
+<div aria-label="登山裝備自檢" aria-modal="true" class="v195Overlay" id="v195GearPage" role="dialog">
+<div class="v195Panel v195GearPanel">
+<div class="v195PanelHead">
+<div><div class="kicker">裝備檢查</div><h2>🎒 登山裝備自檢</h2><p>完整清單獨立檢查，首頁就不用一路滑到下輩子。</p></div>
+<button class="ghost" onclick="document.getElementById('v195GearPage').classList.remove('open');document.body.classList.remove('v195NoScroll')" type="button">✕ 關閉</button>
+</div>
+<div class="v195GearTools">
+<label>行程類型
+          <select id="v195GearType">
+<option value="day">一日行程</option><option value="overnight">兩天一夜</option><option value="multi">三天兩夜以上</option>
+</select>
+</label>
+<label>搜尋裝備<input id="v195GearSearch" placeholder="例如：頭燈、雨衣、瓦斯"/></label>
+<label class="gearChoice"><input id="v195RequiredOnly" type="checkbox"/> 只看基本必備</label>
+<label class="gearChoice"><input id="v195MissingOnly" type="checkbox"/> 只看未完成</label>
+</div>
+<div class="v195GearProgress" id="v195GearProgress"></div>
+<div class="v195GearActions">
+<button class="ghost" id="v195ExpandAll" type="button">全部展開</button>
+<button class="ghost" id="v195CollapseAll" type="button">全部收合</button>
+<button class="ghost" id="v195ClearGear" type="button">清除目前勾選</button>
+</div>
+<div id="homeChecklist"></div>
+</div>
+</div>
+<div aria-label="新增登山分享" aria-modal="true" class="v195Overlay" id="v195ArticleModal" role="dialog">
+<div class="v195Panel v195ArticlePanel">
+<div class="v195PanelHead">
+<div><div class="kicker">登山文章／分享</div><h2>📚 新增登山分享</h2><p>貼外部文章、YouTube、健行筆記，或直接寫一段自己的內容。按下發布就完成。</p></div>
+<button class="ghost" onclick="document.getElementById('v195ArticleModal').classList.remove('open')" type="button">✕ 關閉</button>
+</div>
+<div class="notice">這裡是首頁公共分享區。貼連結或自己寫一段內容都可以。</div>
+<div class="grid">
+<label>標題<input id="v195ArticleTitle" placeholder="例如：嘉明湖近期路況"/></label>
+<label>分類<select id="v195ArticleCategory"><option>行前必讀</option><option>裝備</option><option>路線資訊</option><option>交通／集合</option><option>其他</option></select></label>
+</div>
+<label>網址（可不填）<input id="v195ArticleUrl" placeholder="https://..." type="url"/></label>
+<label>簡短說明<textarea id="v195ArticleContent" placeholder="寫一兩句重點；若是自己寫的內容，也可以只填這裡、不貼網址。" rows="4"></textarea></label>
+<div class="small muted">置頂與刪除由站長管理中心處理。</div>
+<div class="v195ArticleActions"><button id="v195ArticleSubmit" type="button">發布分享</button></div>
+</div>
+</div>
+<div aria-hidden="true" class="v194BearStrip">
+<div class="v194Bubble v194BubbleLeft" id="bearTalkLeft">嗨，又要去爬山了嗎？</div>
+<svg aria-hidden="true" class="v194Mascot v194Walk" viewbox="0 0 120 120">
+<circle cx="37" cy="29" fill="#242820" r="14"></circle><circle cx="79" cy="29" fill="#242820" r="14"></circle>
+<ellipse cx="59" cy="60" fill="#242820" rx="38" ry="41"></ellipse>
+<ellipse cx="59" cy="57" fill="#34392f" rx="25" ry="23"></ellipse>
+<ellipse cx="59" cy="67" fill="#d9c69e" rx="17" ry="13"></ellipse>
+<circle cx="48" cy="51" fill="#fff" r="3.4"></circle><circle cx="70" cy="51" fill="#fff" r="3.4"></circle>
+<circle cx="59" cy="62" fill="#111" r="4.2"></circle><path d="M52 73 Q59 79 66 73" fill="none" stroke="#111" stroke-linecap="round" stroke-width="2.5"></path>
+<ellipse cx="43" cy="64" fill="#ee8a8a" rx="3.2" ry="1.5"></ellipse><ellipse cx="75" cy="64" fill="#ee8a8a" rx="3.2" ry="1.5"></ellipse>
+<rect fill="#4e674f" height="35" rx="8" width="24" x="13" y="43"></rect>
+<path d="M29 38 Q16 55 24 84" fill="none" stroke="#b89b52" stroke-width="4"></path>
+<path d="M39 21 Q58 10 79 21" fill="#c9b58a" stroke="#6b5a39" stroke-width="2"></path>
+<path d="M26 50 Q13 59 20 80" fill="none" stroke="#242820" stroke-linecap="round" stroke-width="11"></path>
+<path d="M91 51 Q104 60 97 81" fill="none" stroke="#242820" stroke-linecap="round" stroke-width="11"></path>
+<path d="M43 92 L36 109" stroke="#242820" stroke-linecap="round" stroke-width="12"></path>
+<path d="M74 92 L81 109" stroke="#242820" stroke-linecap="round" stroke-width="12"></path>
+</svg>
+<div class="v194Bubble v194BubbleRight" id="bearTalkRight">我先坐一下，你慢慢準備。</div>
+<svg aria-hidden="true" class="v194Mascot v194Sit" viewbox="0 0 120 120">
+<circle cx="38" cy="31" fill="#242820" r="13"></circle><circle cx="78" cy="31" fill="#242820" r="13"></circle>
+<ellipse cx="59" cy="63" fill="#242820" rx="39" ry="42"></ellipse>
+<ellipse cx="59" cy="59" fill="#34392f" rx="24" ry="22"></ellipse>
+<ellipse cx="59" cy="70" fill="#d9c69e" rx="17" ry="13"></ellipse>
+<circle cx="49" cy="54" fill="#fff" r="3.3"></circle><circle cx="69" cy="54" fill="#fff" r="3.3"></circle>
+<circle cx="59" cy="65" fill="#111" r="4.1"></circle><path d="M52 75 Q59 80 66 75" fill="none" stroke="#111" stroke-linecap="round" stroke-width="2.4"></path>
+<ellipse cx="43" cy="67" fill="#ee8a8a" rx="3.2" ry="1.5"></ellipse><ellipse cx="75" cy="67" fill="#ee8a8a" rx="3.2" ry="1.5"></ellipse>
+<ellipse cx="37" cy="101" fill="#242820" rx="18" ry="10"></ellipse><ellipse cx="82" cy="101" fill="#242820" rx="18" ry="10"></ellipse>
+<rect fill="#4e674f" height="31" rx="7" width="21" x="18" y="46"></rect>
+<rect fill="#d6c3a0" height="18" rx="5" stroke="#5f5849" stroke-width="2" width="17" x="79" y="76"></rect>
+<path d="M96 80 Q105 82 101 89 Q99 93 95 90" fill="none" stroke="#5f5849" stroke-width="2"></path>
+</svg>
+</div>
+</section>
+</div>
+<div class="hidden" id="joinHelp"><div class="card">
+<button class="ghost homeReturn" onclick="location.assign(location.pathname)" type="button">← 返回</button>
 <div class="kicker">活動報名</div><h2>🏔️ 選擇活動</h2>
 <p class="muted">選擇想參加的活動，查看行程資訊並完成報名。</p>
 <div id="joinActivityList"><div class="muted">讀取活動中…</div></div>
 </div></div>
-<div id="createConfirm" class="hidden"><div class="card createConfirm"><button type="button" class="ghost homeReturn" onclick="location.assign(location.pathname)">← 返回</button><div class="kicker">建立前確認</div><h2>建立新的登山活動？</h2><p>這個功能給本次活動的建立者／領隊使用。</p><div class="warning">如果你只是要填寫別人的活動，請使用領隊提供的活動連結，不需要建立新活動。</div><div class="actions"><button type="button" id="confirmCreate">我是領隊，繼續建立</button><button type="button" class="secondary homeReturn" onclick="location.assign(location.pathname)">返回</button></div></div></div>
-<div id="managerTools" class="hidden"><button type="button" class="ghost homeReturn" style="margin-bottom:12px" onclick="location.assign(location.pathname)">← 返回首頁</button>
-
-    <div class="card">
-      <div class="kicker">建立新活動</div>
-      <div id="createAnchor"></div><h2>建立活動</h2><p class="muted small">手機可直接一路往下填；照片、費用與行程都可以之後再修改。</p>
-      <form id="createForm">
-        <div class="grid">
-          <label>活動名稱<input name="name" required autocomplete="name" placeholder="例如：奇萊主北"></label>
-          <label>報名截止<input type="datetime-local" name="cutoff"></label>
-        </div>
-        <div class="grid">
-          <label>開始日期<input type="date" name="start" required></label>
-          <label>結束日期<input type="date" name="end" required></label>
-        </div>
-        <div class="grid">
-          <label>活動總人數<input type="number" name="total_people" min="1" inputmode="numeric" value="8" required></label>
-          <label>活動封面照片<input type="file" name="cover" accept="image/*"></label>
-          <label class="homePublicToggle"><input type="checkbox" name="show_on_home" checked> 顯示在網站首頁「近期活動」</label>
-        </div>
-        <div class="small muted">封面照片選填；建議使用橫式山景照片。</div>
-        <div id="createError" class="warning hidden" style="margin-top:12px"></div>
-        <div class="feeGrid">
-<label>住宿總額<input type="number" min="0" name="lodging_fee" value="0" inputmode="numeric"></label>
-<label>住宿分攤人數<input type="number" min="0" name="lodging_split" placeholder="自動"></label>
-<label style="grid-column:span 2">住宿說明<input name="lodging_note" placeholder="例如：向陽山屋"></label>
+<div class="hidden" id="createConfirm"><div class="card createConfirm"><button class="ghost homeReturn" onclick="location.assign(location.pathname)" type="button">← 返回</button><div class="kicker">建立前確認</div><h2>建立新的登山活動？</h2><p>這個功能給本次活動的建立者／領隊使用。</p><div class="warning">如果你只是要填寫別人的活動，請使用領隊提供的活動連結，不需要建立新活動。</div><div class="actions"><button id="confirmCreate" type="button">我是領隊，繼續建立</button><button class="secondary homeReturn" onclick="location.assign(location.pathname)" type="button">返回</button></div></div></div>
+<div class="hidden" id="managerTools"><button class="ghost homeReturn" onclick="location.assign(location.pathname)" style="margin-bottom:12px" type="button">← 返回首頁</button>
+<div class="card">
+<div class="kicker">建立新活動</div>
+<div id="createAnchor"></div><h2>建立活動</h2><p class="muted small">手機可直接一路往下填；照片、費用與行程都可以之後再修改。</p>
+<form id="createForm">
+<div class="grid">
+<label>活動名稱<input autocomplete="name" name="name" placeholder="例如：奇萊主北" required=""/></label>
+<label>報名截止<input name="cutoff" type="datetime-local"/></label>
+</div>
+<div class="grid">
+<label>開始日期<input name="start" required="" type="date"/></label>
+<label>結束日期<input name="end" required="" type="date"/></label>
+</div>
+<div class="grid">
+<label>活動總人數<input inputmode="numeric" min="1" name="total_people" required="" type="number" value="8"/></label>
+<label>活動封面照片<input accept="image/*" name="cover" type="file"/></label>
+<label class="homePublicToggle"><input checked="" name="show_on_home" type="checkbox"/> 顯示在網站首頁「近期活動」</label>
+</div>
+<div class="small muted">封面照片選填；建議使用橫式山景照片。</div>
+<div class="warning hidden" id="createError" style="margin-top:12px"></div>
+<div class="feeGrid">
+<label>住宿總額<input inputmode="numeric" min="0" name="lodging_fee" type="number" value="0"/></label>
+<label>住宿分攤人數<input min="0" name="lodging_split" placeholder="自動" type="number"/></label>
+<label style="grid-column:span 2">住宿說明<input name="lodging_note" placeholder="例如：向陽山屋"/></label>
 </div>
 <div class="feeGrid">
-<label>接駁總額<input type="number" min="0" name="transport_fee" value="0" inputmode="numeric"></label>
-<label>接駁分攤人數<input type="number" min="0" name="transport_split" placeholder="自動"></label>
-<label style="grid-column:span 2">接駁說明<input name="transport_note" placeholder="例如：台北來回"></label>
+<label>接駁總額<input inputmode="numeric" min="0" name="transport_fee" type="number" value="0"/></label>
+<label>接駁分攤人數<input min="0" name="transport_split" placeholder="自動" type="number"/></label>
+<label style="grid-column:span 2">接駁說明<input name="transport_note" placeholder="例如：台北來回"/></label>
 </div>
 <div class="feeGrid">
-<label>餐飲總額<input type="number" min="0" name="meal_fee" value="0" inputmode="numeric"></label>
-<label>餐飲分攤人數<input type="number" min="0" name="meal_split" placeholder="自動"></label>
-<label style="grid-column:span 2">餐飲說明<input name="meal_note" placeholder="例如：協作早晚餐"></label>
+<label>餐飲總額<input inputmode="numeric" min="0" name="meal_fee" type="number" value="0"/></label>
+<label>餐飲分攤人數<input min="0" name="meal_split" placeholder="自動" type="number"/></label>
+<label style="grid-column:span 2">餐飲說明<input name="meal_note" placeholder="例如：協作早晚餐"/></label>
 </div>
 <div class="feeGrid">
-<label>其他費用名稱<input name="other_name" placeholder="例如：協作費"></label>
-<label>其他費用總額<input type="number" min="0" name="other_fee" value="0" inputmode="numeric"></label>
-<label>其他分攤人數<input type="number" min="0" name="other_split" placeholder="自動"></label>
-<label>其他說明<input name="other_note" placeholder="選填"></label>
+<label>其他費用名稱<input name="other_name" placeholder="例如：協作費"/></label>
+<label>其他費用總額<input inputmode="numeric" min="0" name="other_fee" type="number" value="0"/></label>
+<label>其他分攤人數<input min="0" name="other_split" placeholder="自動" type="number"/></label>
+<label>其他說明<input name="other_note" placeholder="選填"/></label>
 </div>
-        <div id="createExtraFees"></div>
-        <button type="button" class="secondary" id="createAddExtraFee">＋ 新增費用項目</button>
-        <div class="muted small" style="margin-top:6px">需要更多費用時再新增，不限項目數量。</div>
-
-
-
+<div id="createExtraFees"></div>
+<button class="secondary" id="createAddExtraFee" type="button">＋ 新增費用項目</button>
+<div class="muted small" style="margin-top:6px">需要更多費用時再新增，不限項目數量。</div>
 <div class="card" style="box-shadow:none;margin:14px 0">
- <div class="kicker">行程摘要</div><h3>行前資訊</h3>
- <div class="grid">
-  <label>集合時間<input type="datetime-local" name="meeting_at"></label>
-  <label>集合地點<input name="meeting_place" placeholder="例如：台北車站東三門"></label>
-  <label>住宿方式<select name="lodging_type"><option value="">未設定</option><option>山屋</option><option>帳篷野營</option><option>協作帳篷</option><option>民宿／住宿</option><option>當日來回</option><option>安全</option><option>其他</option></select></label>
-  <label>預計下山時間<input type="datetime-local" name="expected_down_at"></label>
- </div>
- <label>行前補充<textarea name="trip_note" rows="3" placeholder="集合、接駁、水源、特殊注意事項…"></textarea></label>
+<div class="kicker">行程摘要</div><h3>行前資訊</h3>
+<div class="grid">
+<label>集合時間<input name="meeting_at" type="datetime-local"/></label>
+<label>集合地點<input name="meeting_place" placeholder="例如：台北車站東三門"/></label>
+<label>住宿方式<select name="lodging_type"><option value="">未設定</option><option>山屋</option><option>帳篷野營</option><option>協作帳篷</option><option>民宿／住宿</option><option>當日來回</option><option>安全</option><option>其他</option></select></label>
+<label>預計下山時間<input name="expected_down_at" type="datetime-local"/></label>
 </div>
-
+<label>行前補充<textarea name="trip_note" placeholder="集合、接駁、水源、特殊注意事項…" rows="3"></textarea></label>
+</div>
 <div class="card" style="box-shadow:none;margin:14px 0">
-  <div class="kicker">行前準備</div><h3>出發準備設定</h3>
-  <div class="grid">
-    <label>主要山區／路線
+<div class="kicker">行前準備</div><h3>出發準備設定</h3>
+<div class="grid">
+<label>主要山區／路線
       <select name="mountain_area">
-        <option value="">不顯示氣候參考</option>
-        <option>合歡山區</option><option>奇萊山區</option><option>雪山／武陵</option><option>武陵四秀</option>
-        <option>大霸山區</option><option>南湖／中央尖</option><option>玉山山區</option><option>八通關／秀姑巒</option>
-        <option>嘉明湖／向陽／三叉</option><option>南二段</option><option>南橫</option><option>能高安東軍</option>
-        <option>北大武</option><option>干卓萬</option><option>丹大／東郡</option><option>馬博橫斷</option><option>新康橫斷</option>
-      </select>
-    </label>
-    <label>自訂山名／目的地<input name="mountain_name" placeholder="例如：品田山、嘉明湖"></label>
-  </div>
-  <div class="small muted">月份會直接依活動開始日期判斷；顯示的是歷史氣候參考，不是即時預報。</div>
-  <h3 style="margin-top:16px">⚠️ 報名時必備裝備提醒</h3>
-  <div id="createGearPicker" class="gearPicker"></div>
-  <div class="grid"><label>自訂必備裝備<input id="createCustomGear" placeholder="例如：2L 行動水"></label><div style="align-self:end"><button type="button" class="secondary" id="createAddGear">＋ 加入</button></div></div>
-  <div id="createCustomGearList" class="chips"></div>
+<option value="">不顯示氣候參考</option>
+<option>合歡山區</option><option>奇萊山區</option><option>雪山／武陵</option><option>武陵四秀</option>
+<option>大霸山區</option><option>南湖／中央尖</option><option>玉山山區</option><option>八通關／秀姑巒</option>
+<option>嘉明湖／向陽／三叉</option><option>南二段</option><option>南橫</option><option>能高安東軍</option>
+<option>北大武</option><option>干卓萬</option><option>丹大／東郡</option><option>馬博橫斷</option><option>新康橫斷</option>
+</select>
+</label>
+<label>自訂山名／目的地<input name="mountain_name" placeholder="例如：品田山、嘉明湖"/></label>
 </div>
-
-<label>行程內容<textarea name="itinerary" rows="8" placeholder="直接把 LINE / 貼文行程貼在這裡"></textarea></label>
+<div class="small muted">月份會直接依活動開始日期判斷；顯示的是歷史氣候參考，不是即時預報。</div>
+<h3 style="margin-top:16px">⚠️ 報名時必備裝備提醒</h3>
+<div class="gearPicker" id="createGearPicker"></div>
+<div class="grid"><label>自訂必備裝備<input id="createCustomGear" placeholder="例如：2L 行動水"/></label><div style="align-self:end"><button class="secondary" id="createAddGear" type="button">＋ 加入</button></div></div>
+<div class="chips" id="createCustomGearList"></div>
+</div>
+<label>行程內容<textarea name="itinerary" placeholder="直接把 LINE / 貼文行程貼在這裡" rows="8"></textarea></label>
 <div class="privacyBox">
-<label>活動管理密碼＊<input type="text" name="admin_password" required autocomplete="new-password" placeholder="中文、英文、數字、符號皆可"></label>
-<div class="small"><strong>⚠ 請保存活動管理密碼</strong><br>系統無法協助找回管理密碼。</div>
-</div><div class="notice small">費用請填整團總額。系統會依實際分攤人數自動計算每人應付金額；自行前往者預設不分接駁費。</div><button type="submit" class="block">＋ 建立活動</button>
-      </form>
-    </div>
-    <div class="kicker">我的登山活動</div>
-    <h2>我的活動</h2>
-    <div id="eventAnchor"></div><div id="eventList"></div>
-  </div>
+<label>活動管理密碼＊<input autocomplete="new-password" name="admin_password" placeholder="中文、英文、數字、符號皆可" required="" type="text"/></label>
+<div class="small"><strong>⚠ 請保存活動管理密碼</strong><br/>系統無法協助找回管理密碼。</div>
+</div><div class="notice small">費用請填整團總額。系統會依實際分攤人數自動計算每人應付金額；自行前往者預設不分接駁費。</div><button class="block" type="submit">＋ 建立活動</button>
+</form>
+</div>
+<div class="kicker">我的登山活動</div>
+<h2>我的活動</h2>
+<div id="eventAnchor"></div><div id="eventList"></div>
+</div>
 </section>
-
-  <section id="manageView" class="hidden">
-    <div class="actions" style="margin-bottom:12px"><button class="ghost" id="backBtn" onclick="location.assign(location.pathname)">← 活動列表</button></div>
-    <div class="card">
-      <div class="kicker">活動管理</div>
-      <h2 id="manageTitle"></h2>
-      <div id="manageSummary" class="summaryStrip"></div>
-      <div class="grid">
-        <label>活動名稱<input id="mName"></label>
-        <label>報名截止<input type="datetime-local" id="mCutoff"></label>
-      </div>
-      <div class="grid">
-        <label>活動總人數<input type="number" min="1" id="mTotalPeople"></label>
-        <label>更換封面照片<input type="file" accept="image/*" id="mCover"></label>
-        <label class="homePublicToggle"><input type="checkbox" id="mShowHome"> 顯示在網站首頁「近期活動」</label>
-      </div>
-      <div id="coverPreview"></div>
-      <div class="actions" style="margin-bottom:10px"><button type="button" class="ghost" id="removeCover">移除封面</button></div>
-      <div class="grid">
-        <label>開始日期<input type="date" id="mStart"></label>
-        <label>結束日期<input type="date" id="mEnd"></label>
-      </div>
-      <div class="actions">
-        <button id="saveEvent">儲存設定</button>
-        <button class="ghost" id="toggleOpen"></button>
-        <button class="ghost" id="toggleLock"></button>
-        <button class="ghost" id="toggleCancel"></button>
-      </div>
-    </div>
-    
-
+<section class="hidden" id="manageView">
+<div class="actions" style="margin-bottom:12px"><button class="ghost" id="backBtn" onclick="location.assign(location.pathname)">← 活動列表</button></div>
 <div class="card">
- <div class="kicker">行程摘要</div><h2>🧭 行前資訊</h2>
- <div class="grid">
-  <label>集合時間<input type="datetime-local" id="mMeetingAt"></label>
-  <label>集合地點<input id="mMeetingPlace"></label>
-  <label>住宿方式<select id="mLodgingType"><option value="">未設定</option><option>山屋</option><option>帳篷野營</option><option>協作帳篷</option><option>民宿／住宿</option><option>當日來回</option><option>其他</option></select></label>
-  <label>預計下山時間<input type="datetime-local" id="mExpectedDownAt"></label>
- </div>
- <label>行前補充<textarea id="mTripNote" rows="3"></textarea></label>
- <button type="button" id="saveTripBrief">儲存行前資訊</button>
+<div class="kicker">活動管理</div>
+<h2 id="manageTitle"></h2>
+<div class="summaryStrip" id="manageSummary"></div>
+<div class="grid">
+<label>活動名稱<input id="mName"/></label>
+<label>報名截止<input id="mCutoff" type="datetime-local"/></label>
 </div>
-
-<div class="card">
-  <div class="kicker">行前準備</div><h2>⏳ 出發準備</h2>
-  <div id="manageCountdown"></div>
-  <div class="grid">
-    <label>主要山區／路線<select id="mMountainArea"></select></label>
-    <label>自訂山名／目的地<input id="mMountainName"></label>
-  </div>
-  <h3>⚠️ 必備裝備提醒</h3>
-  <div id="manageGearPicker" class="gearPicker"></div>
-  <div class="grid"><label>新增自訂必備<input id="manageCustomGear"></label><div style="align-self:end"><button type="button" class="secondary" id="manageAddGear">＋ 加入</button></div></div>
-  <div id="manageCustomGearList" class="chips"></div>
-  <button type="button" id="savePrep">儲存出發準備</button>
+<div class="grid">
+<label>活動總人數<input id="mTotalPeople" min="1" type="number"/></label>
+<label>更換封面照片<input accept="image/*" id="mCover" type="file"/></label>
+<label class="homePublicToggle"><input id="mShowHome" type="checkbox"/> 顯示在網站首頁「近期活動」</label>
+</div>
+<div id="coverPreview"></div>
+<div class="actions" style="margin-bottom:10px"><button class="ghost" id="removeCover" type="button">移除封面</button></div>
+<div class="grid">
+<label>開始日期<input id="mStart" type="date"/></label>
+<label>結束日期<input id="mEnd" type="date"/></label>
+</div>
+<div class="actions">
+<button id="saveEvent">儲存設定</button>
+<button class="ghost" id="toggleOpen"></button>
+<button class="ghost" id="toggleLock"></button>
+<button class="ghost" id="toggleCancel"></button>
+</div>
 </div>
 <div class="card">
-  <div class="kicker">文章管理</div><h2>📚 行前文章／資訊分享</h2>
-  <div class="grid"><label>標題<input id="articleTitle" placeholder="例如：嘉明湖行前注意事項"></label><label>分類<select id="articleCategory"><option>行前必讀</option><option>裝備</option><option>路線資訊</option><option>交通／集合</option><option>其他</option></select></label></div>
-  <label>內容<textarea id="articleContent" rows="4" placeholder="可以直接寫提醒，也可以只貼連結"></textarea></label>
-  <label>外部連結<input id="articleUrl" type="url" placeholder="https://..."></label>
-  <label class="gearChoice"><input id="articlePinned" type="checkbox"> 📌 設為必讀／置頂</label>
-  <button type="button" id="addArticle">＋ 新增文章</button>
-  <div id="manage文章管理" style="margin-top:12px"></div>
+<div class="kicker">行程摘要</div><h2>🧭 行前資訊</h2>
+<div class="grid">
+<label>集合時間<input id="mMeetingAt" type="datetime-local"/></label>
+<label>集合地點<input id="mMeetingPlace"/></label>
+<label>住宿方式<select id="mLodgingType"><option value="">未設定</option><option>山屋</option><option>帳篷野營</option><option>協作帳篷</option><option>民宿／住宿</option><option>當日來回</option><option>其他</option></select></label>
+<label>預計下山時間<input id="mExpectedDownAt" type="datetime-local"/></label>
 </div>
-
+<label>行前補充<textarea id="mTripNote" rows="3"></textarea></label>
+<button id="saveTripBrief" type="button">儲存行前資訊</button>
+</div>
 <div class="card">
-      <div class="kicker">領隊s</div><h2>領隊</h2>
-      <p>目前：<b id="leadersText"></b></p>
-      <div class="actions"><select id="leaderSelect"></select><button id="add領隊">加入領隊</button></div>
-    </div>
-    <div class="card">
-      <div class="grid3">
-        <div class="stat"><span>參加者</span><b id="countAll">0</b></div>
-        <div class="stat"><span>完成</span><b id="count完成">0</b></div>
-        <div class="stat"><span>已變更</span><b id="count已變更">0</b></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="kicker">活動資料</div>
-      <h2>📋 申請資料</h2>
-      <p class="muted small">領隊專用。逐欄複製到入園／入山申請網站；敏感個資刪除後將不再顯示。</p>
-      <div id="applicationData"></div>
-    </div>
-    <div class="card">
-      <div class="kicker">費用分攤</div><h2>費用分攤</h2>
-      <div class="feeGrid"><label>住宿總額<input type="number" min="0" id="fLodging"></label><label>分攤人數<input type="number" min="0" id="sLodging"></label><div class="notice" id="pLodging"></div></div>
-      <div class="feeGrid"><label>接駁總額<input type="number" min="0" id="fTransport"></label><label>分攤人數<input type="number" min="0" id="sTransport"></label><div class="notice" id="pTransport"></div></div>
-      <div class="feeGrid"><label>餐飲總額<input type="number" min="0" id="fMeal"></label><label>分攤人數<input type="number" min="0" id="sMeal"></label><div class="notice" id="pMeal"></div></div>
-      <div class="feeGrid"><label>其他費用名稱<input id="fOtherName"></label><label>其他總額<input type="number" min="0" id="fOther"></label><label>分攤人數<input type="number" min="0" id="sOther"></label><div class="notice" id="pOther"></div></div>
-      <div id="manageExtraFees"></div>
-      <button type="button" class="secondary" id="manageAddExtraFee">＋ 新增費用項目</button>
-      <button id="saveFees">儲存費用設定</button>
-    </div>
-    <div class="card">
-      <div class="toolbar"><div><div class="kicker">參加者名單</div><h2>報名名單</h2></div><button id="exportBtn">匯出 CSV</button></div>
-      <div class="tablewrap"><table><thead><tr><th>姓名</th><th>生日</th><th>身分證</th><th>電話</th><th>緊急聯絡人</th><th>電話</th><th>應付</th><th>費用 / 付款</th></tr></thead><tbody id="memberRows"></tbody></table></div>
-    </div>
-    <div class="card"><div class="kicker">變更紀錄</div><h2>修改歷史</h2><div id="history"></div></div>
-  
-    <div class="card dangerZone">
-      <h3>⚠️ 刪除活動</h3>
-      <p class="muted small">刪除後會一併移除此活動、報名人員及修改紀錄，無法復原。</p>
-      <button type="button" class="danger" id="deleteEventBtn">刪除此活動</button>
-    </div>
+<div class="kicker">行前準備</div><h2>⏳ 出發準備</h2>
+<div id="manageCountdown"></div>
+<div class="grid">
+<label>主要山區／路線<select id="mMountainArea"></select></label>
+<label>自訂山名／目的地<input id="mMountainName"/></label>
+</div>
+<h3>⚠️ 必備裝備提醒</h3>
+<div class="gearPicker" id="manageGearPicker"></div>
+<div class="grid"><label>新增自訂必備<input id="manageCustomGear"/></label><div style="align-self:end"><button class="secondary" id="manageAddGear" type="button">＋ 加入</button></div></div>
+<div class="chips" id="manageCustomGearList"></div>
+<button id="savePrep" type="button">儲存出發準備</button>
+</div>
+<div class="card">
+<div class="kicker">文章管理</div><h2>📚 行前文章／資訊分享</h2>
+<div class="grid"><label>標題<input id="articleTitle" placeholder="例如：嘉明湖行前注意事項"/></label><label>分類<select id="articleCategory"><option>行前必讀</option><option>裝備</option><option>路線資訊</option><option>交通／集合</option><option>其他</option></select></label></div>
+<label>內容<textarea id="articleContent" placeholder="可以直接寫提醒，也可以只貼連結" rows="4"></textarea></label>
+<label>外部連結<input id="articleUrl" placeholder="https://..." type="url"/></label>
+<label class="gearChoice"><input id="articlePinned" type="checkbox"/> 📌 設為必讀／置頂</label>
+<button id="addArticle" type="button">＋ 新增文章</button>
+<div id="manageArticles" style="margin-top:12px"></div>
+</div>
+<div class="card">
+<div class="kicker">領隊</div><h2>領隊</h2>
+<p>目前：<b id="leadersText"></b></p>
+<div class="actions"><select id="leaderSelect"></select><button id="addLeader">加入領隊</button></div>
+</div>
+<div class="card">
+<div class="grid3">
+<div class="stat"><span>參加者</span><b id="countAll">0</b></div>
+<div class="stat"><span>完成</span><b id="countComplete">0</b></div>
+<div class="stat"><span>已變更</span><b id="countChanged">0</b></div>
+</div>
+</div>
+<div class="card">
+<div class="kicker">活動資料</div>
+<h2>📋 申請資料</h2>
+<p class="muted small">領隊專用。逐欄複製到入園／入山申請網站；敏感個資刪除後將不再顯示。</p>
+<div id="applicationData"></div>
+</div>
+<div class="card">
+<div class="kicker">費用分攤</div><h2>費用分攤</h2>
+<div class="feeGrid"><label>住宿總額<input id="fLodging" min="0" type="number"/></label><label>分攤人數<input id="sLodging" min="0" type="number"/></label><div class="notice" id="pLodging"></div></div>
+<div class="feeGrid"><label>接駁總額<input id="fTransport" min="0" type="number"/></label><label>分攤人數<input id="sTransport" min="0" type="number"/></label><div class="notice" id="pTransport"></div></div>
+<div class="feeGrid"><label>餐飲總額<input id="fMeal" min="0" type="number"/></label><label>分攤人數<input id="sMeal" min="0" type="number"/></label><div class="notice" id="pMeal"></div></div>
+<div class="feeGrid"><label>其他費用名稱<input id="fOtherName"/></label><label>其他總額<input id="fOther" min="0" type="number"/></label><label>分攤人數<input id="sOther" min="0" type="number"/></label><div class="notice" id="pOther"></div></div>
+<div id="manageExtraFees"></div>
+<button class="secondary" id="manageAddExtraFee" type="button">＋ 新增費用項目</button>
+<button id="saveFees">儲存費用設定</button>
+</div>
+<div class="card">
+<div class="toolbar"><div><div class="kicker">參加者名單</div><h2>報名名單</h2></div><button id="exportBtn">匯出 CSV</button></div>
+<div class="tablewrap"><table><thead><tr><th>姓名</th><th>生日</th><th>身分證</th><th>電話</th><th>緊急聯絡人</th><th>電話</th><th>應付</th><th>費用 / 付款</th></tr></thead><tbody id="memberRows"></tbody></table></div>
+</div>
+<div class="card"><div class="kicker">變更紀錄</div><h2>修改歷史</h2><div id="history"></div></div>
+<div class="card dangerZone">
+<h3>⚠️ 刪除活動</h3>
+<p class="muted small">刪除後會一併移除此活動、報名人員及修改紀錄，無法復原。</p>
+<button class="danger" id="deleteEventBtn" type="button">刪除此活動</button>
+</div>
 </section>
-
-  <section id="registerView" class="hidden">
-    <div class="actions" style="margin-bottom:12px"><button class="ghost" id="registerBack" onclick="location.assign(location.pathname)">← 返回</button></div>
-    <div class="card">
-      <div class="kicker">活動報名</div>
-      <h2 id="regTitle"></h2>
-      <p id="regMeta" class="muted"></p>
-      <p id="regStatus"></p>
-      <div id="activityInfo"></div>
-
-<div id="v19TripSummary" class="card hidden">
- <div class="kicker">行程摘要</div><h2>🧭 行前資訊總覽</h2>
- <div id="v19TripSummaryGrid" class="tripSummaryGrid"></div>
+<section class="hidden" id="registerView">
+<div class="actions" style="margin-bottom:12px"><button class="ghost" id="registerBack" onclick="location.assign(location.pathname)">← 返回</button></div>
+<div class="card">
+<div class="kicker">活動報名</div>
+<h2 id="regTitle"></h2>
+<p class="muted" id="regMeta"></p>
+<p id="regStatus"></p>
+<div id="activityInfo"></div>
+<div class="card hidden" id="v19TripSummary">
+<div class="kicker">行程摘要</div><h2>🧭 行前資訊總覽</h2>
+<div class="tripSummaryGrid" id="v19TripSummaryGrid"></div>
 </div>
-
-
 <div id="departurePrepPublic"></div>
-<div id="requiredGearConfirm" class="requiredGearBox hidden">
-  <label class="gearChoice"><input type="checkbox" id="gearAck"> 我已閱讀並了解本活動必備裝備需求</label>
+<div class="requiredGearBox hidden" id="requiredGearConfirm">
+<label class="gearChoice"><input id="gearAck" type="checkbox"/> 我已閱讀並了解本活動必備裝備需求</label>
 </div>
-<div id="public文章管理"></div>
+<div id="publicArticles"></div>
 <div id="personalChecklist"></div>
-
-      <form id="regForm">
-        <label>姓名<input name="name" required></label>
-        <label>出生年月日（西元）<input name="birth" type="date" required></label>
-        <label>身分證字號<input name="idno" maxlength="10" required placeholder="A123456789"></label>
-        <label>本人電話<input name="phone" required inputmode="tel" placeholder="0912345678"></label>
-        <label>性別<select name="gender" required><option value="">請選擇</option><option>男</option><option>女</option><option>其他／不便透露</option></select></label>
-        <label>地址<input name="address" autocomplete="street-address"></label>
-        <label>Email<input type="email" name="email" autocomplete="email"></label>
-        <label>緊急聯絡人姓名<input name="emergency_name" required></label>
-        <label>與本人關係<input name="emergency_relation" placeholder="例如：父親、配偶、朋友"></label>
-        <label>緊急聯絡人電話<input name="emergency_phone" required inputmode="tel"></label>
-        <label>登山經驗<select name="experience"><option>無</option><option>郊山</option><option>中級山</option><option>百岳／3000m 高山</option><option>多日縱走</option></select></label>
-        <label>最近三個月爬過什麼山<textarea name="recent_hikes" rows="4"></textarea></label>
-        <label>3000m 以上高山經驗<select name="high_altitude"><option>無</option><option>1–2 次</option><option>3–5 次</option><option>5 次以上</option></select></label>
-        <label>飲食需求<input name="diet" placeholder="無／素食／其他"></label>
-        <div class="grid"><label>集合方式<select name="transport_type"><option>自行前往</option><option>高鐵</option><option>火車</option><option>指定集合地點</option></select></label><label>上車／集合地點<input name="pickup_place" placeholder="自由填寫"></label></div>
-        <label>備註<textarea name="note" rows="3"></textarea></label>
-        <div class="privacyBox small">🔒 敏感個資將於活動結束 60 天後自動刪除。</div><button class="block">確認送出</button>
-      </form>
-      <button id="recoverBtn" class="secondary block">找回 / 修改我的資料</button>
-    </div>
-  </section>
-
-  <section id="recoverView" class="hidden">
-    <div class="actions" style="margin-bottom:12px"><button class="ghost" id="recoverBack">← 返回</button></div>
-    <div class="card"><div class="kicker">找回報名</div><h2>找回我的資料</h2>
-      <form id="recoverForm">
-        <label>姓名<input name="name" required></label>
-        <label>出生年月日<input type="date" name="birth" required></label>
-        <label>本人電話<input name="phone" required></label>
-        <label>身分證末四碼<input name="last4" maxlength="4" required></label>
-        <button class="block">驗證資料</button>
-      </form>
-    </div>
-  </section>
-
-  <section id="editView" class="hidden">
-    <div class="actions" style="margin-bottom:12px"><button class="ghost" id="editBack">← 返回</button></div>
-    <div class="card"><div class="kicker">參加者資料</div><h2>查看 / 修改資料</h2><div id="editArea"></div></div>
-  </section>
+<form id="regForm">
+<label>姓名<input name="name" required=""/></label>
+<label>出生年月日（西元）<input name="birth" required="" type="date"/></label>
+<label>身分證字號<input maxlength="10" name="idno" placeholder="A123456789" required=""/></label>
+<label>本人電話<input inputmode="tel" name="phone" placeholder="0912345678" required=""/></label>
+<label>性別<select name="gender" required=""><option value="">請選擇</option><option>男</option><option>女</option><option>其他／不便透露</option></select></label>
+<label>地址<input autocomplete="street-address" name="address"/></label>
+<label>Email<input autocomplete="email" name="email" type="email"/></label>
+<label>緊急聯絡人姓名<input name="emergency_name" required=""/></label>
+<label>與本人關係<input name="emergency_relation" placeholder="例如：父親、配偶、朋友"/></label>
+<label>緊急聯絡人電話<input inputmode="tel" name="emergency_phone" required=""/></label>
+<label>登山經驗<select name="experience"><option>無</option><option>郊山</option><option>中級山</option><option>百岳／3000m 高山</option><option>多日縱走</option></select></label>
+<label>最近三個月爬過什麼山<textarea name="recent_hikes" rows="4"></textarea></label>
+<label>3000m 以上高山經驗<select name="high_altitude"><option>無</option><option>1–2 次</option><option>3–5 次</option><option>5 次以上</option></select></label>
+<label>飲食需求<input name="diet" placeholder="無／素食／其他"/></label>
+<div class="grid"><label>集合方式<select name="transport_type"><option>自行前往</option><option>高鐵</option><option>火車</option><option>指定集合地點</option></select></label><label>上車／集合地點<input name="pickup_place" placeholder="自由填寫"/></label></div>
+<label>備註<textarea name="note" rows="3"></textarea></label>
+<div class="privacyBox small">🔒 敏感個資將於活動結束 60 天後自動刪除。</div><button class="block">確認送出</button>
+</form>
+<button class="secondary block" id="recoverBtn">找回 / 修改我的資料</button>
+</div>
+</section>
+<section class="hidden" id="recoverView">
+<div class="actions" style="margin-bottom:12px"><button class="ghost" id="recoverBack">← 返回</button></div>
+<div class="card"><div class="kicker">找回報名</div><h2>找回我的資料</h2>
+<form id="recoverForm">
+<label>姓名<input name="name" required=""/></label>
+<label>出生年月日<input name="birth" required="" type="date"/></label>
+<label>本人電話<input name="phone" required=""/></label>
+<label>身分證末四碼<input maxlength="4" name="last4" required=""/></label>
+<button class="block">驗證資料</button>
+</form>
+</div>
+</section>
+<section class="hidden" id="editView">
+<div class="actions" style="margin-bottom:12px"><button class="ghost" id="editBack">← 返回</button></div>
+<div class="card"><div class="kicker">參加者資料</div><h2>查看 / 修改資料</h2><div id="editArea"></div></div>
+</section>
 </main>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
@@ -1038,7 +996,7 @@ async function renderJoinActivities(){
 }
 
 async function renderPublicHome(){
- const box=$('#homeActivities'),articles=$('#home文章管理');if(!box)return;
+ const box=$('#homeActivities'),articles=$('#homeArticles');if(!box)return;
  if(!sb){
   box.innerHTML='<div class="homeEmpty">線上活動會在網站部署後顯示。首頁氣候與裝備工具仍可直接使用。</div>';
   if(articles)articles.innerHTML='<div class="muted">線上文章會在網站部署並連上 Supabase 後顯示。</div>';
@@ -1054,7 +1012,7 @@ async function renderPublicHome(){
    <div class="homeTripMeta">${a.cancelled?'<span class="badge cancelled">⛔ 已取消</span>':''}<span class="chip homeTripCount">👥 目前 ${a.participant_count||0} 人</span>${(a.mountain_name||a.mountain_area)?`<span class="chip">${esc(a.mountain_name||a.mountain_area)}</span>`:''}</div>
    <b>${a.cancelled?'查看活動':'查看活動／報名'} →</b></div></article>`).join(''):'<div class="homeEmpty">目前沒有公開的近期活動。</div>';
  box.querySelectorAll('.homeTripCard').forEach(c=>{const go=()=>openRegister(c.dataset.slug);c.onclick=go;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}});
- if(window.renderPublic文章管理)window.renderPublic文章管理();
+ if(window.renderPublicArticles)window.renderPublicArticles();
 }
 
 function mountainOptions(selected=''){return MOUNTAIN_AREAS.map(x=>`<option ${x===selected?'selected':''}>${x||'不顯示氣候參考'}</option>`).join('')}
@@ -1255,7 +1213,7 @@ function renderManageExtraFees(fees){
 function renderManage(){
  const s=currentSnapshot,a=s.activity,ps=s.participants||[],fees=s.fees||[];
  $('#manageTitle').textContent=a.name;$('#mName').value=a.name;$('#mMeetingAt').value=a.meeting_at?String(a.meeting_at).slice(0,16):'';$('#mMeetingPlace').value=a.meeting_place||'';$('#mLodgingType').value=a.lodging_type||'';$('#mExpectedDownAt').value=a.expected_down_at?String(a.expected_down_at).slice(0,16):'';$('#mTripNote').value=a.trip_note||'';$('#mShowHome').checked=a.show_on_home!==false;$('#coverPreview').innerHTML=a.cover_image?`<div class="photoPreview"><img src="${esc(a.cover_image)}" alt="活動封面"></div>`:'<div class="muted small">目前沒有封面照片。</div>';$('#mStart').value=a.start_date;$('#mEnd').value=a.end_date;$('#mCutoff').value=a.cutoff_at?String(a.cutoff_at).slice(0,16):'';$('#mTotalPeople').value=a.total_people||1;
- $('#manageCountdown').innerHTML=`<div class="notice"><b>${countdownText(a.start_date)}</b></div>`;$('#mMountainArea').innerHTML=mountainOptions(a.mountain_area||'');$('#mMountainName').value=a.mountain_name||'';manageCustomGears=(a.required_gear||[]).filter(g=>!GEAR_PRESETS.includes(g));renderGearPicker('#manageGearPicker',a.required_gear||[]);renderCustom('#manageCustomGearList',manageCustomGears);renderManage文章管理(s.articles||[]);
+ $('#manageCountdown').innerHTML=`<div class="notice"><b>${countdownText(a.start_date)}</b></div>`;$('#mMountainArea').innerHTML=mountainOptions(a.mountain_area||'');$('#mMountainName').value=a.mountain_name||'';manageCustomGears=(a.required_gear||[]).filter(g=>!GEAR_PRESETS.includes(g));renderGearPicker('#manageGearPicker',a.required_gear||[]);renderCustom('#manageCustomGearList',manageCustomGears);renderManageArticles(s.articles||[]);
  $('#toggleOpen').textContent=a.cancelled?'活動已取消':(a.registration_open?'手動關閉報名':'重新開放報名');$('#toggleOpen').disabled=!!a.cancelled;
  $('#toggleCancel').textContent=a.cancelled?'恢復此活動':'⛔ 取消活動';$('#toggleLock').textContent=a.data_locked?'解除修改鎖定':'鎖定隊員修改';
  const paid=ps.filter(p=>p.payment_status==='已付款').length;
@@ -1271,8 +1229,8 @@ function renderManage(){
  $('#history').innerHTML=(s.logs||[]).map(l=>`<div class="log"><span class="muted small">${new Date(l.created_at).toLocaleString('zh-TW')}</span><br>${esc(l.detail)}</div>`).join('')||'<div class="muted">尚無修改紀錄</div>';
 }
 
-function renderManage文章管理(items){
- const box=$('#manage文章管理');if(!box)return;
+function renderManageArticles(items){
+ const box=$('#manageArticles');if(!box)return;
  box.innerHTML=(items||[]).map(x=>`<div class="articleCard">${x.pinned?'<span class="pinned">📌 必讀</span>':''}<b>${esc(x.title)}</b> <span class="chip">${esc(x.category||'其他')}</span><div>${esc(x.content||'')}</div>${x.url?`<div><a href="${esc(x.url)}" target="_blank" rel="noopener">開啟連結 ↗</a></div>`:''}<button type="button" class="ghost" onclick="deleteArticle('${x.id}')">刪除</button></div>`).join('')||'<div class="muted">尚未新增文章。</div>';
 }
 window.deleteArticle=async id=>{if(!confirm('刪除這篇文章？'))return;const {error}=await sb.rpc('v18_delete_article',{p_slug:currentSlug,p_password:currentPassword,p_article_id:id});if(error)alert(error.message);else refreshManage()};
@@ -1332,7 +1290,7 @@ window.openRegister=async slug=>{
 
  $('#departurePrepPublic').innerHTML=`<div class="prepGrid"><div class="prepCard"><h3>⏳ 活動倒數</h3><div class="countdownBig">${esc(countdownText(data.start_date))}</div><div class="muted">${esc(data.start_date)} 出發</div></div>${climateCard(data.mountain_area,data.start_date,data.mountain_name)}</div>${req.length?`<div class="requiredGearBox"><h3>⚠️ 本活動必備裝備</h3><div class="chips">${req.map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div></div>`:''}`;
  $('#requiredGearConfirm').classList.toggle('hidden',!req.length);$('#gearAck').checked=false;
- $('#public文章管理').innerHTML=(data.articles||[]).length?`<div class="card"><div class="kicker">Trip Info</div><h2>📚 行前資訊</h2>${data.articles.map(x=>`<div class="articleCard">${x.pinned?'<span class="pinned">📌 必讀</span>':''}<b>${esc(x.title)}</b> <span class="chip">${esc(x.category||'其他')}</span>${x.content?`<div style="white-space:pre-wrap">${esc(x.content)}</div>`:''}${x.url?`<div><a href="${esc(x.url)}" target="_blank" rel="noopener">查看分享連結 ↗</a></div>`:''}</div>`).join('')}</div>`:'';
+ $('#publicArticles').innerHTML=(data.articles||[]).length?`<div class="card"><div class="kicker">行前資訊</div><h2>📚 行前資訊</h2>${data.articles.map(x=>`<div class="articleCard">${x.pinned?'<span class="pinned">📌 必讀</span>':''}<b>${esc(x.title)}</b> <span class="chip">${esc(x.category||'其他')}</span>${x.content?`<div style="white-space:pre-wrap">${esc(x.content)}</div>`:''}${x.url?`<div><a href="${esc(x.url)}" target="_blank" rel="noopener">查看分享連結 ↗</a></div>`:''}</div>`).join('')}</div>`:'';
  renderChecklist(slug,req);
 
  $('#regForm').style.display=(!data.cancelled&&data.registration_open)?'block':'none';show('registerView');history.replaceState({},'',location.pathname+'?event='+slug);
@@ -1362,7 +1320,7 @@ async function renderEdit(){
 }
 $('#recoverBack').onclick=()=>show('registerView');$('#editBack').onclick=()=>openRegister(currentSlug);
 $('#exportBtn').onclick=()=>alert('CSV 匯出下一版接上；目前資料已在線上資料庫。');
-$('#add領隊').onclick=()=>alert('領隊名單先保留原介面，線上版暫不需要額外設定。');
+$('#addLeader').onclick=()=>alert('領隊名單先保留原介面，線上版暫不需要額外設定。');
 $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上。');
 
 (async()=>{
@@ -1373,7 +1331,6 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
 })();
 })();
 </script>
-
 <script>
 (function(){
   const tips=[
@@ -1407,15 +1364,13 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
   }
 })();
 </script>
-
-
 <script>
 (function(){
   const byId=id=>document.getElementById(id);
 
   
-  window.renderPublic文章管理=async function renderPublic文章管理(){
-    const host=byId('home文章管理'); if(!host)return;
+  window.renderPublicArticles=async function renderPublicArticles(){
+    const host=byId('homeArticles'); if(!host)return;
     if(!sb){host.innerHTML='<div class="muted">部署後會顯示公共分享。</div>';return}
     const {data,error}=await sb.rpc('v20_public_articles');
     if(error){host.innerHTML=`<div class="muted">文章讀取失敗：${String(error.message||error)}</div>`;return}
@@ -1425,7 +1380,7 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
       `<div class="homeArticle">${x.pinned?'<span class="pinned">📌 置頂</span>':''}<b>${esc2(x.title)}</b> <span class="chip">${esc2(x.category||'其他')}</span>${x.content?`<div class="small" style="margin-top:5px">${esc2(x.content.slice(0,85))}${x.content.length>85?'…':''}</div>`:''}${x.url?`<div style="margin-top:5px"><a href="${esc2(x.url)}" target="_blank" rel="noopener">開啟來源 ↗</a></div>`:''}</div>`
     ).join(''):'<div class="muted">目前還沒有公開文章。</div>';
   }
-  renderPublic文章管理();
+  renderPublicArticles();
 
 
   const homeType=byId('homeChecklistType'), homeSearch=byId('v19GearSearch');
@@ -1488,15 +1443,13 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
       if(error)throw error;
       ['v195ArticleTitle','v195ArticleUrl','v195ArticleContent'].forEach(id=>{const e=byId(id);if(e)e.value=''});
       byId('v195ArticleModal')?.classList.remove('open');
-      await renderPublic文章管理();
+      await renderPublicArticles();
       alert('分享已發布');
     }catch(e){alert(e?.message||'發布失敗')}
     finally{btn.disabled=false;btn.textContent='發布分享'}
   });
 })();
 </script>
-
-
 <script>
 (function(){
  const lines=[
@@ -1521,25 +1474,21 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
  }
 })();
 </script>
-
-
-<div id="v197PageBear" class="v197PageBear hidden" aria-live="polite">
-  <div id="v197BearBubble" class="v197BearBubble">我在這裡。</div>
-  <svg class="v197BearSvg" viewBox="0 0 120 120" aria-hidden="true">
-    <circle cx="37" cy="29" r="14" fill="#242820"/><circle cx="79" cy="29" r="14" fill="#242820"/>
-    <ellipse cx="59" cy="62" rx="38" ry="41" fill="#242820"/>
-    <ellipse cx="59" cy="58" rx="25" ry="23" fill="#34392f"/>
-    <ellipse cx="59" cy="68" rx="17" ry="13" fill="#d9c69e"/>
-    <circle cx="48" cy="52" r="3.4" fill="#fff"/><circle cx="70" cy="52" r="3.4" fill="#fff"/>
-    <circle cx="59" cy="63" r="4.2" fill="#111"/>
-    <path d="M52 74 Q59 79 66 74" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round"/>
-    <ellipse cx="43" cy="65" rx="3.2" ry="1.5" fill="#ee8a8a"/><ellipse cx="75" cy="65" rx="3.2" ry="1.5" fill="#ee8a8a"/>
-    <rect x="15" y="44" width="23" height="34" rx="8" fill="#4e674f"/>
-    <ellipse cx="37" cy="101" rx="17" ry="9" fill="#242820"/><ellipse cx="82" cy="101" rx="17" ry="9" fill="#242820"/>
-  </svg>
+<div aria-live="polite" class="v197PageBear hidden" id="v197PageBear">
+<div class="v197BearBubble" id="v197BearBubble">我在這裡。</div>
+<svg aria-hidden="true" class="v197BearSvg" viewbox="0 0 120 120">
+<circle cx="37" cy="29" fill="#242820" r="14"></circle><circle cx="79" cy="29" fill="#242820" r="14"></circle>
+<ellipse cx="59" cy="62" fill="#242820" rx="38" ry="41"></ellipse>
+<ellipse cx="59" cy="58" fill="#34392f" rx="25" ry="23"></ellipse>
+<ellipse cx="59" cy="68" fill="#d9c69e" rx="17" ry="13"></ellipse>
+<circle cx="48" cy="52" fill="#fff" r="3.4"></circle><circle cx="70" cy="52" fill="#fff" r="3.4"></circle>
+<circle cx="59" cy="63" fill="#111" r="4.2"></circle>
+<path d="M52 74 Q59 79 66 74" fill="none" stroke="#111" stroke-linecap="round" stroke-width="2.5"></path>
+<ellipse cx="43" cy="65" fill="#ee8a8a" rx="3.2" ry="1.5"></ellipse><ellipse cx="75" cy="65" fill="#ee8a8a" rx="3.2" ry="1.5"></ellipse>
+<rect fill="#4e674f" height="34" rx="8" width="23" x="15" y="44"></rect>
+<ellipse cx="37" cy="101" fill="#242820" rx="17" ry="9"></ellipse><ellipse cx="82" cy="101" fill="#242820" rx="17" ry="9"></ellipse>
+</svg>
 </div>
-
-
 <script>
 (function(){
  const bear=document.getElementById('v197PageBear');
@@ -1648,11 +1597,6 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
  });
 })();
 </script>
-
-
-
-
-
 <script>
 document.addEventListener('click', function(e){
   const b=e.target.closest('.homeReturn,[data-home-return]');
@@ -1662,35 +1606,30 @@ document.addEventListener('click', function(e){
   location.assign(location.pathname);
 }, true);
 </script>
-
-
-<div id="v20AdminLogin" class="v20Overlay" role="dialog" aria-modal="true" aria-label="站長登入">
-  <div class="v20Modal">
-    <button type="button" class="ghost v20Close" data-v20-close="login">✕</button>
-    <div class="kicker">站長登入</div>
-    <h2>🐻 你是阿翰嗎？</h2>
-    <p class="muted">輸入「我是阿翰」，黑熊才會放你進去。</p>
-    <label>總管理密碼<input id="v20AdminPassword" type="text" autocomplete="current-password"></label>
-    <button type="button" id="v20AdminLoginBtn">進入管理中心</button>
-    <div id="v20AdminLoginMsg" class="small muted" style="margin-top:10px"></div>
-  </div>
+<div aria-label="站長登入" aria-modal="true" class="v20Overlay" id="v20AdminLogin" role="dialog">
+<div class="v20Modal">
+<button class="ghost v20Close" data-v20-close="login" type="button">✕</button>
+<div class="kicker">站長登入</div>
+<h2>🐻 你是阿翰嗎？</h2>
+<p class="muted">請輸入站長密碼。</p>
+<label>總管理密碼<input autocomplete="current-password" id="v20AdminPassword" type="text"/></label>
+<button id="v20AdminLoginBtn" type="button">進入管理中心</button>
+<div class="small muted" id="v20AdminLoginMsg" style="margin-top:10px"></div>
 </div>
-
-<div id="v20AdminCenter" class="v20Overlay" role="dialog" aria-modal="true" aria-label="全站管理中心">
-  <div class="v20AdminPanel">
-    <div class="v20AdminHead">
-      <div><div class="kicker">全站管理</div><h2>🐻 全站管理中心</h2><p class="muted">全部活動與公共文章集中管理。</p></div>
-      <div class="actions"><button type="button" class="ghost" id="v20AdminRefresh">重新整理</button><button type="button" class="ghost v20Close" data-v20-close="center">關閉</button></div>
-    </div>
-    <div id="v20AdminStats" class="summaryStrip"></div>
-    <div class="v20AdminGrid">
-      <section class="v20AdminCard"><div class="v20SectionHead"><h3>🏔️ 全部活動</h3><button type="button" id="v21AdminCreateActivity">＋ 新增活動</button></div><div id="v20AdminActivities"></div></section>
-      <section class="v20AdminCard"><h3>📚 公共文章</h3><div id="v20Admin文章管理"></div></section>
-    </div>
-  </div>
 </div>
-
-
+<div aria-label="全站管理中心" aria-modal="true" class="v20Overlay" id="v20AdminCenter" role="dialog">
+<div class="v20AdminPanel">
+<div class="v20AdminHead">
+<div><div class="kicker">全站管理</div><h2>🐻 全站管理中心</h2><p class="muted">全部活動與公共文章集中管理。</p></div>
+<div class="actions"><button class="ghost" id="v20AdminRefresh" type="button">重新整理</button><button class="ghost v20Close" data-v20-close="center" type="button">關閉</button></div>
+</div>
+<div class="summaryStrip" id="v20AdminStats"></div>
+<div class="v20AdminGrid">
+<section class="v20AdminCard"><div class="v20SectionHead"><h3>🏔️ 全部活動</h3><button id="v21AdminCreateActivity" type="button">＋ 新增活動</button></div><div id="v20AdminActivities"></div></section>
+<section class="v20AdminCard"><h3>📚 公共文章</h3><div id="v20AdminArticles"></div></section>
+</div>
+</div>
+</div>
 <script>
 (function(){
   const $id=id=>document.getElementById(id);
@@ -1733,7 +1672,7 @@ document.addEventListener('click', function(e){
           <button type="button" class="v20Danger" data-a="${a.id}" data-delete-activity="1">刪除活動</button>
         </div>
       </div>`).join(''):'<div class="muted">目前沒有活動。</div>';
-    $id('v20Admin文章管理').innerHTML=arts.length?arts.map(x=>`
+    $id('v20AdminArticles').innerHTML=arts.length?arts.map(x=>`
       <div class="v20AdminRow"><div class="v20AdminRowHead"><div><b>${escAdmin(x.title)}</b><div class="small muted">${escAdmin(x.category||'其他')}</div></div>${x.pinned?'<span class="v20Status on">置頂</span>':''}</div>
       ${x.url?`<div class="small"><a href="${escAdmin(x.url)}" target="_blank" rel="noopener">開啟來源 ↗</a></div>`:''}
       <div class="v20AdminActions"><button class="ghost" type="button" data-art="${x.id}" data-edit-article="1">修改</button><button class="ghost" type="button" data-art="${x.id}" data-art-action="toggle_pin">${x.pinned?'取消置頂':'置頂'}</button><button class="v20Danger" type="button" data-art="${x.id}" data-art-action="delete">刪除</button></div></div>`).join(''):'<div class="muted">目前沒有公共文章。</div>';
@@ -1743,10 +1682,10 @@ document.addEventListener('click', function(e){
       if(error)alert(error.message);else{await loadAdmin();if(typeof renderPublicHome==='function')renderPublicHome()}
     });
     $id('v20AdminActivities').querySelectorAll('[data-open="activity"]').forEach(b=>b.onclick=()=>{center.classList.remove('open');openRegister(b.dataset.slug)});
-    $id('v20Admin文章管理').querySelectorAll('[data-art-action]').forEach(b=>b.onclick=async()=>{
+    $id('v20AdminArticles').querySelectorAll('[data-art-action]').forEach(b=>b.onclick=async()=>{
       if(b.dataset.artAction==='delete'&&!confirm('刪除這篇公共文章？'))return;
       const {error}=await sb.rpc('v20_admin_article_action',{p_token:adminToken,p_article_id:b.dataset.art,p_action:b.dataset.artAction});
-      if(error)alert(error.message);else{await loadAdmin();if(window.renderPublic文章管理)window.renderPublic文章管理()}
+      if(error)alert(error.message);else{await loadAdmin();if(window.renderPublicArticles)window.renderPublicArticles()}
     });
   }
 
@@ -1760,7 +1699,8 @@ document.addEventListener('click', function(e){
     if(error){$id('v20AdminLoginMsg').textContent=error.message;return}
     adminToken=String(data||'');sessionStorage.setItem('v20_admin_token',adminToken);
     $id('v20AdminPassword').value='';$id('v20AdminLoginMsg').textContent='';
-    login.classList.remove('open');center.classList.add('open');await loadAdmin();
+    login.classList.remove('open');center.classList.add('open');
+    try{await loadAdmin()}catch(e){console.error(e);center.classList.remove('open');login.classList.add('open');$id('v20AdminLoginMsg').textContent='密碼驗證成功，但管理中心載入失敗：'+(e?.message||e)}
   };
   $id('v20AdminPassword').addEventListener('keydown',e=>{if(e.key==='Enter')$id('v20AdminLoginBtn').click()});
 
@@ -1809,38 +1749,35 @@ document.addEventListener('click', function(e){
   $id('v20AdminRefresh').onclick=loadAdmin;
 })();
 </script>
-
-
-<div id="v21ActivityModal" class="v20Overlay" role="dialog" aria-modal="true">
- <div class="v20Modal v21FormModal">
-  <button type="button" class="ghost v21ModalClose">✕</button>
-  <div class="kicker">活動管理</div><h2 id="v21ActivityTitle">新增活動</h2>
-  <form id="v21ActivityForm">
-   <input type="hidden" name="activity_id">
-   <label>活動名稱<input name="name" required placeholder="例如：嘉明湖 3D2N"></label>
-   <div class="grid"><label>開始日期<input type="date" name="start_date" required></label><label>結束日期<input type="date" name="end_date" required></label></div>
-   <label>活動代碼<input name="slug" placeholder="可留空，自動產生"></label>
-   <label>活動說明<textarea name="description" rows="5" placeholder="行程、集合資訊、注意事項…"></textarea></label>
-   <label class="gearChoice"><input type="checkbox" name="show_on_home" checked> 顯示在首頁</label>
-   <button type="submit" class="block">儲存活動</button>
-  </form>
- </div>
+<div aria-modal="true" class="v20Overlay" id="v21ActivityModal" role="dialog">
+<div class="v20Modal v21FormModal">
+<button class="ghost v21ModalClose" type="button">✕</button>
+<div class="kicker">活動管理</div><h2 id="v21ActivityTitle">新增活動</h2>
+<form id="v21ActivityForm">
+<input name="activity_id" type="hidden"/>
+<label>活動名稱<input name="name" placeholder="例如：嘉明湖 3D2N" required=""/></label>
+<div class="grid"><label>開始日期<input name="start_date" required="" type="date"/></label><label>結束日期<input name="end_date" required="" type="date"/></label></div>
+<label>活動代碼<input name="slug" placeholder="可留空，自動產生"/></label>
+<label>活動說明<textarea name="description" placeholder="行程、集合資訊、注意事項…" rows="5"></textarea></label>
+<label class="gearChoice"><input checked="" name="show_on_home" type="checkbox"/> 顯示在首頁</label>
+<button class="block" type="submit">儲存活動</button>
+</form>
 </div>
-<div id="v21ArticleModal" class="v20Overlay" role="dialog" aria-modal="true">
- <div class="v20Modal v21FormModal">
-  <button type="button" class="ghost v21ModalClose">✕</button>
-  <div class="kicker">文章管理</div><h2 id="v21ArticleTitle">新增文章</h2>
-  <form id="v21ArticleForm">
-   <input type="hidden" name="article_id">
-   <label>標題<input name="title" required></label>
-   <label>分類<select name="category"><option>行程分享</option><option>裝備</option><option>安全</option><option>路況</option><option>其他</option></select></label>
-   <label>網址<input name="url" type="url" placeholder="https://…"></label>
-   <label>簡短說明<textarea name="content" rows="5"></textarea></label>
-   <label class="gearChoice"><input type="checkbox" name="pinned"> 置頂</label>
-   <button type="submit" class="block">儲存文章</button>
-  </form>
- </div>
 </div>
-
+<div aria-modal="true" class="v20Overlay" id="v21ArticleModal" role="dialog">
+<div class="v20Modal v21FormModal">
+<button class="ghost v21ModalClose" type="button">✕</button>
+<div class="kicker">文章管理</div><h2 id="v21ArticleTitle">新增文章</h2>
+<form id="v21ArticleForm">
+<input name="article_id" type="hidden"/>
+<label>標題<input name="title" required=""/></label>
+<label>分類<select name="category"><option>行程分享</option><option>裝備</option><option>安全</option><option>路況</option><option>其他</option></select></label>
+<label>網址<input name="url" placeholder="https://…" type="url"/></label>
+<label>簡短說明<textarea name="content" rows="5"></textarea></label>
+<label class="gearChoice"><input name="pinned" type="checkbox"/> 置頂</label>
+<button class="block" type="submit">儲存文章</button>
+</form>
+</div>
+</div>
 </body>
 </html>
