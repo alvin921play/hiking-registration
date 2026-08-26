@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -221,6 +220,24 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 .event.cancelledEvent{opacity:.88;border-color:#8d3f32}
 .cancelBanner{background:#8d3f32;color:#fff;padding:12px 14px;border:2px solid #5d2c24;margin:10px 0;font-weight:800}
 </style>
+
+<style>
+.prepGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.prepCard{border:1px solid var(--line,#d9ddd9);border-radius:18px;padding:16px;background:rgba(255,255,255,.72)}
+.prepCard h3{margin:0 0 8px}.countdownBig{font-size:30px;font-weight:900;line-height:1.1}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.chip{display:inline-flex;padding:6px 10px;border-radius:999px;background:#eef2ee;font-size:13px;font-weight:700}
+.gearPicker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.gearChoice{display:flex!important;align-items:center;gap:8px;border:1px solid #dde2dd;border-radius:12px;padding:10px;background:#fff}
+.gearChoice input{width:auto!important;margin:0!important}
+.requiredGearBox{border-left:4px solid #c56b24;background:#fff7ee;padding:14px;border-radius:12px;margin:12px 0}
+.articleCard{border-top:1px solid #e4e7e4;padding:12px 0}.articleCard:first-child{border-top:0}
+.articleCard a{font-weight:800}.pinned{display:inline-block;font-size:12px;font-weight:800;margin-right:6px}
+.checkItem{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px dashed #e1e4e1}.checkItem input{width:auto!important;margin:0!important}
+.checkItem.done span{text-decoration:line-through;opacity:.55}
+.climateNote{font-size:13px;opacity:.72}
+@media(max-width:720px){.prepGrid,.gearPicker{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body>
 <main class="wrap">
@@ -287,6 +304,28 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
         <button type="button" class="secondary" id="createAddExtraFee">＋ 新增費用項目</button>
         <div class="muted small" style="margin-top:6px">需要更多費用時再新增，不限項目數量。</div>
 
+
+<div class="card" style="box-shadow:none;margin:14px 0">
+  <div class="kicker">Departure Prep</div><h3>出發準備設定</h3>
+  <div class="grid">
+    <label>主要山區／路線
+      <select name="mountain_area">
+        <option value="">不顯示氣候參考</option>
+        <option>合歡山區</option><option>奇萊山區</option><option>雪山／武陵</option><option>武陵四秀</option>
+        <option>大霸山區</option><option>南湖／中央尖</option><option>玉山山區</option><option>八通關／秀姑巒</option>
+        <option>嘉明湖／向陽／三叉</option><option>南二段</option><option>南橫</option><option>能高安東軍</option>
+        <option>北大武</option><option>干卓萬</option><option>丹大／東郡</option><option>馬博橫斷</option><option>新康橫斷</option>
+      </select>
+    </label>
+    <label>自訂山名／目的地<input name="mountain_name" placeholder="例如：品田山、嘉明湖"></label>
+  </div>
+  <div class="small muted">月份會直接依活動開始日期判斷；顯示的是歷史氣候參考，不是即時預報。</div>
+  <h3 style="margin-top:16px">⚠️ 報名時必備裝備提醒</h3>
+  <div id="createGearPicker" class="gearPicker"></div>
+  <div class="grid"><label>自訂必備裝備<input id="createCustomGear" placeholder="例如：2L 行動水"></label><div style="align-self:end"><button type="button" class="secondary" id="createAddGear">＋ 加入</button></div></div>
+  <div id="createCustomGearList" class="chips"></div>
+</div>
+
 <label>行程內容<textarea name="itinerary" rows="8" placeholder="直接把 LINE / 貼文行程貼在這裡"></textarea></label>
 <div class="privacyBox">
 <label>活動管理密碼＊<input type="text" name="admin_password" required autocomplete="new-password" placeholder="中文、英文、數字、符號皆可"></label>
@@ -327,7 +366,31 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
         <button class="ghost" id="toggleCancel"></button>
       </div>
     </div>
-    <div class="card">
+    
+<div class="card">
+  <div class="kicker">Departure Prep</div><h2>⏳ 出發準備</h2>
+  <div id="manageCountdown"></div>
+  <div class="grid">
+    <label>主要山區／路線<select id="mMountainArea"></select></label>
+    <label>自訂山名／目的地<input id="mMountainName"></label>
+  </div>
+  <h3>⚠️ 必備裝備提醒</h3>
+  <div id="manageGearPicker" class="gearPicker"></div>
+  <div class="grid"><label>新增自訂必備<input id="manageCustomGear"></label><div style="align-self:end"><button type="button" class="secondary" id="manageAddGear">＋ 加入</button></div></div>
+  <div id="manageCustomGearList" class="chips"></div>
+  <button type="button" id="savePrep">儲存出發準備</button>
+</div>
+<div class="card">
+  <div class="kicker">Articles</div><h2>📚 行前文章／資訊分享</h2>
+  <div class="grid"><label>標題<input id="articleTitle" placeholder="例如：嘉明湖行前注意事項"></label><label>分類<select id="articleCategory"><option>行前必讀</option><option>裝備</option><option>路線資訊</option><option>交通／集合</option><option>其他</option></select></label></div>
+  <label>內容<textarea id="articleContent" rows="4" placeholder="可以直接寫提醒，也可以只貼連結"></textarea></label>
+  <label>外部連結<input id="articleUrl" type="url" placeholder="https://..."></label>
+  <label class="gearChoice"><input id="articlePinned" type="checkbox"> 📌 設為必讀／置頂</label>
+  <button type="button" id="addArticle">＋ 新增文章</button>
+  <div id="manageArticles" style="margin-top:12px"></div>
+</div>
+
+<div class="card">
       <div class="kicker">Leaders</div><h2>領隊</h2>
       <p>目前：<b id="leadersText"></b></p>
       <div class="actions"><select id="leaderSelect"></select><button id="addLeader">加入領隊</button></div>
@@ -377,6 +440,14 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
       <p id="regMeta" class="muted"></p>
       <p id="regStatus"></p>
       <div id="activityInfo"></div>
+
+<div id="departurePrepPublic"></div>
+<div id="requiredGearConfirm" class="requiredGearBox hidden">
+  <label class="gearChoice"><input type="checkbox" id="gearAck"> 我已閱讀並了解本活動必備裝備需求</label>
+</div>
+<div id="publicArticles"></div>
+<div id="personalChecklist"></div>
+
       <form id="regForm">
         <label>姓名<input name="name" required></label>
         <label>出生年月日（西元）<input name="birth" type="date" required></label>
@@ -430,7 +501,54 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 const norm=s=>String(s||'').trim(), phone=s=>String(s||'').replace(/\D/g,'');
 const views=['managerView','manageView','registerView','recoverView','editView'];
 let currentSlug=null,currentPassword=null,currentParticipantToken=null,currentSnapshot=null;
+const GEAR_PRESETS=['登山背包','登山杖','排汗衣','保暖層','防風防水外層','登山鞋／越野鞋','頭燈','備用電池／電力','離線地圖','飲水','行動糧','個人藥品','急救用品','身分證件','睡袋','睡墊','帳篷','爐具／燃料','餐具','垃圾袋'];
+const MOUNTAIN_AREAS=['','合歡山區','奇萊山區','雪山／武陵','武陵四秀','大霸山區','南湖／中央尖','玉山山區','八通關／秀姑巒','嘉明湖／向陽／三叉','南二段','南橫','能高安東軍','北大武','干卓萬','丹大／東郡','馬博橫斷','新康橫斷'];
+let createCustomGears=[],manageCustomGears=[];
+function mountainOptions(selected=''){return MOUNTAIN_AREAS.map(x=>`<option ${x===selected?'selected':''}>${x||'不顯示氣候參考'}</option>`).join('')}
+function renderGearPicker(id,selected=[]){const box=$(id);if(!box)return;box.innerHTML=GEAR_PRESETS.map(g=>`<label class="gearChoice"><input type="checkbox" value="${esc(g)}" ${selected.includes(g)?'checked':''}> ${esc(g)}</label>`).join('')}
+function selectedGear(id,custom=[]){return [...$$(id+' input:checked').map(x=>x.value),...custom].filter((v,i,a)=>v&&a.indexOf(v)===i)}
+function renderCustom(id,arr){const box=$(id);if(!box)return;box.innerHTML=arr.map((g,i)=>`<span class="chip">${esc(g)} <button type="button" class="ghost" data-i="${i}" style="padding:0 4px">×</button></span>`).join('');box.querySelectorAll('button').forEach(b=>b.onclick=()=>{arr.splice(+b.dataset.i,1);renderCustom(id,arr)})}
+function countdownText(start){
+ const today=new Date();today.setHours(0,0,0,0);const d=new Date(start+'T00:00:00');const n=Math.ceil((d-today)/86400000);
+ if(n>0)return `距離出發還有 ${n} 天`;if(n===0)return '🏔️ 今天出發';return `活動已開始 ${Math.abs(n)} 天`;
+}
+const CLIMATE={
+ '合歡山區':{alt:'約 2,700–3,400m',winter:'冬季低溫、強風與結冰機率提高',summer:'夏季午後雷雨與強對流需留意'},
+ '奇萊山區':{alt:'約 3,000–3,600m',winter:'低溫、強風，稜線風寒明顯',summer:'午後雷雨、濃霧與短時強降雨'},
+ '雪山／武陵':{alt:'約 2,500–3,900m',winter:'高處可能結冰或降雪，夜間低溫',summer:'午後雷雨，圈谷與稜線溫差大'},
+ '武陵四秀':{alt:'約 2,700–3,500m',winter:'夜間低溫，裸岩區注意結冰',summer:'午後雷雨、濕滑岩面'},
+ '大霸山區':{alt:'約 2,600–3,500m',winter:'風寒與低溫明顯',summer:'午後雷雨與長距離曝曬'},
+ '南湖／中央尖':{alt:'約 3,000–3,700m',winter:'高海拔低溫、風雪與結冰風險',summer:'午後雷雨、圈谷天候變化快'},
+ '玉山山區':{alt:'約 2,600–3,950m',winter:'高海拔常接近或低於 0°C，注意結冰',summer:'午後雷雨與強風'},
+ '八通關／秀姑巒':{alt:'約 2,700–3,800m',winter:'長程高山低溫與風寒',summer:'午後雷雨、長天數降雨風險'},
+ '嘉明湖／向陽／三叉':{alt:'約 2,800–3,600m',winter:'夜間可能接近或低於 0°C，風寒明顯',summer:'午後雷雨與曝曬並存'},
+ '南二段':{alt:'約 2,800–3,600m',winter:'長程縱走低溫與風寒',summer:'午後雷雨、水源與曝曬需規劃'},
+ '南橫':{alt:'約 2,500–3,700m',winter:'乾冷、強風，寒流時低溫明顯',summer:'午後雷雨與邊坡落石風險'},
+ '能高安東軍':{alt:'約 2,800–3,350m',winter:'稜線風強、夜間低溫',summer:'午後雷雨與草坡曝曬'},
+ '北大武':{alt:'約 1,500–3,100m',winter:'山頂低溫、風大',summer:'潮濕、多雨、午後雷雨'},
+ '干卓萬':{alt:'約 2,800–3,300m',winter:'高山低溫與強風',summer:'午後雷雨、長程濕滑'},
+ '丹大／東郡':{alt:'約 2,800–3,600m',winter:'偏遠長程，低溫與風寒',summer:'午後雷雨與水源變化'},
+ '馬博橫斷':{alt:'約 3,000–3,800m',winter:'高海拔長程低溫、風雪風險',summer:'午後雷雨與長天數天候變化'},
+ '新康橫斷':{alt:'約 2,800–3,600m',winter:'夜間低溫與風寒',summer:'午後雷雨、偏遠路線需保守評估'}
+};
+function climateCard(area,start,name=''){
+ if(!area||!CLIMATE[area])return '';
+ const m=Number(String(start).slice(5,7)),c=CLIMATE[area],cool=[11,12,1,2,3].includes(m);
+ return `<div class="prepCard"><h3>🌡️ ${m} 月山區氣候參考</h3><b>${esc(name||area)}</b><div class="chips"><span class="chip">${esc(c.alt)}</span><span class="chip">${cool?'冷季':'暖季'}</span></div><div>${esc(cool?c.winter:c.summer)}</div><div class="climateNote">歷史氣候與海拔帶參考，非即時天氣預報；出發前仍應確認最新氣象與山況。</div></div>`;
+}
+function checklistKey(slug){return 'hiking-checklist-v18-'+slug}
+function renderChecklist(slug,required=[]){
+ const box=$('#personalChecklist');if(!box)return;
+ let saved={};try{saved=JSON.parse(localStorage.getItem(checklistKey(slug))||'{}')}catch(_){}
+ const base=[...required,'登山背包','登山鞋／越野鞋','頭燈','雨具／防水外層','飲水','行動糧','離線地圖','行動電源','個人藥品','垃圾袋'].filter((v,i,a)=>a.indexOf(v)===i);
+ box.innerHTML=`<div class="card"><div class="kicker">My Checklist</div><h2>🎒 我的裝備自檢</h2><div id="checkItems">${base.map(g=>`<label class="checkItem ${saved[g]?'done':''}"><input type="checkbox" data-g="${esc(g)}" ${saved[g]?'checked':''}><span>${required.includes(g)?'⚠️ ':''}${esc(g)}${required.includes(g)?'（活動必備）':''}</span></label>`).join('')}</div><div class="grid"><label>新增自己的裝備<input id="myGearAdd" placeholder="例如：咖啡、拖鞋"></label><div style="align-self:end"><button type="button" class="secondary" id="myGearAddBtn">＋ 新增</button></div></div></div>`;
+ const save=()=>{const o={};$$('#checkItems input').forEach(x=>o[x.dataset.g]=x.checked);localStorage.setItem(checklistKey(slug),JSON.stringify(o));$$('#checkItems .checkItem').forEach(l=>l.classList.toggle('done',l.querySelector('input').checked))};
+ $$('#checkItems input').forEach(x=>x.onchange=save);
+ $('#myGearAddBtn').onclick=()=>{const g=norm($('#myGearAdd').value);if(!g)return;const d=document.createElement('label');d.className='checkItem';d.innerHTML=`<input type="checkbox" data-g="${esc(g)}"><span>${esc(g)}</span>`;$('#checkItems').appendChild(d);d.querySelector('input').onchange=save;$('#myGearAdd').value='';save()};
+}
+
 let createExtraFeeDrafts=[],manageExtraFeeDrafts=[];
+renderGearPicker('#createGearPicker',[]);renderCustom('#createCustomGearList',createCustomGears);
 const knownKey='hiking-online-known-events-v17';
 function known(){try{return JSON.parse(localStorage.getItem(knownKey)||'[]')}catch(_){return[]}}
 function remember(slug){const a=known().filter(x=>x!==slug);a.unshift(slug);localStorage.setItem(knownKey,JSON.stringify(a.slice(0,30)))}
@@ -481,12 +599,15 @@ function formFees(f,total){
  return arr.concat(readExtra('#createExtraFees','cExtra'));
 }
 
+
+$('#createAddGear').onclick=()=>{const g=norm($('#createCustomGear').value);if(g&&!createCustomGears.includes(g))createCustomGears.push(g);$('#createCustomGear').value='';renderCustom('#createCustomGearList',createCustomGears)};
+
 $('#createForm').addEventListener('submit',async ev=>{
  ev.preventDefault(); const f=new FormData(ev.target),btn=ev.target.querySelector('button[type="submit"]'),err=$('#createError');
  if(btn){btn.disabled=true;btn.textContent='建立中…'}; err?.classList.add('hidden');
  try{
   const total=Math.max(1,+(f.get('total_people')||1));
-  const payload={name:norm(f.get('name')),start:f.get('start'),end:f.get('end'),cutoff:f.get('cutoff')||null,total_people:total,itinerary:norm(f.get('itinerary')),admin_password:String(f.get('admin_password')||''),fees:formFees(f,total)};
+  const payload={name:norm(f.get('name')),start:f.get('start'),end:f.get('end'),cutoff:f.get('cutoff')||null,total_people:total,itinerary:norm(f.get('itinerary')),admin_password:String(f.get('admin_password')||''),mountain_area:norm(f.get('mountain_area')),mountain_name:norm(f.get('mountain_name')),required_gear:selectedGear('#createGearPicker',createCustomGears),fees:formFees(f,total)};
   const {data,error}=await sb.rpc('v17_create_activity',{p_payload:payload});
   if(error)throw error;
   currentSlug=data.slug; remember(currentSlug);
@@ -527,6 +648,7 @@ function renderManageExtraFees(fees){
 function renderManage(){
  const s=currentSnapshot,a=s.activity,ps=s.participants||[],fees=s.fees||[];
  $('#manageTitle').textContent=a.name;$('#mName').value=a.name;$('#mStart').value=a.start_date;$('#mEnd').value=a.end_date;$('#mCutoff').value=a.cutoff_at?String(a.cutoff_at).slice(0,16):'';$('#mTotalPeople').value=a.total_people||1;
+ $('#manageCountdown').innerHTML=`<div class="notice"><b>${countdownText(a.start_date)}</b></div>`;$('#mMountainArea').innerHTML=mountainOptions(a.mountain_area||'');$('#mMountainName').value=a.mountain_name||'';manageCustomGears=(a.required_gear||[]).filter(g=>!GEAR_PRESETS.includes(g));renderGearPicker('#manageGearPicker',a.required_gear||[]);renderCustom('#manageCustomGearList',manageCustomGears);renderManageArticles(s.articles||[]);
  $('#toggleOpen').textContent=a.cancelled?'活動已取消':(a.registration_open?'手動關閉報名':'重新開放報名');$('#toggleOpen').disabled=!!a.cancelled;
  $('#toggleCancel').textContent=a.cancelled?'恢復此活動':'⛔ 取消活動';$('#toggleLock').textContent=a.data_locked?'解除修改鎖定':'鎖定隊員修改';
  const paid=ps.filter(p=>p.payment_status==='已付款').length;
@@ -541,6 +663,16 @@ function renderManage(){
  $('#applicationData').innerHTML=ps.length?ps.map((p,i)=>`<div class="personCard"><div class="kicker">${i+1} / ${ps.length}</div><h3>${esc(p.name)}</h3><div>生日：${esc(p.birth_date||'—')}</div><div>身分證：${esc(p.id_number||'—')}</div><div>電話：${esc(p.phone||'—')}</div><div>緊急聯絡人：${esc(p.emergency_name||'—')} ${esc(p.emergency_phone||'')}</div></div>`).join(''):'<div class="muted">目前尚無報名資料。</div>';
  $('#history').innerHTML=(s.logs||[]).map(l=>`<div class="log"><span class="muted small">${new Date(l.created_at).toLocaleString('zh-TW')}</span><br>${esc(l.detail)}</div>`).join('')||'<div class="muted">尚無修改紀錄</div>';
 }
+
+function renderManageArticles(items){
+ const box=$('#manageArticles');if(!box)return;
+ box.innerHTML=(items||[]).map(x=>`<div class="articleCard">${x.pinned?'<span class="pinned">📌 必讀</span>':''}<b>${esc(x.title)}</b> <span class="chip">${esc(x.category||'其他')}</span><div>${esc(x.content||'')}</div>${x.url?`<div><a href="${esc(x.url)}" target="_blank" rel="noopener">開啟連結 ↗</a></div>`:''}<button type="button" class="ghost" onclick="deleteArticle('${x.id}')">刪除</button></div>`).join('')||'<div class="muted">尚未新增文章。</div>';
+}
+window.deleteArticle=async id=>{if(!confirm('刪除這篇文章？'))return;const {error}=await sb.rpc('v18_delete_article',{p_slug:currentSlug,p_password:currentPassword,p_article_id:id});if(error)alert(error.message);else refreshManage()};
+$('#manageAddGear').onclick=()=>{const g=norm($('#manageCustomGear').value);if(g&&!manageCustomGears.includes(g))manageCustomGears.push(g);$('#manageCustomGear').value='';renderCustom('#manageCustomGearList',manageCustomGears)};
+$('#savePrep').onclick=async()=>{const {error}=await sb.rpc('v18_update_prep',{p_slug:currentSlug,p_password:currentPassword,p_mountain_area:$('#mMountainArea').value,p_mountain_name:norm($('#mMountainName').value),p_required_gear:selectedGear('#manageGearPicker',manageCustomGears)});if(error)alert(error.message);else{alert('出發準備已儲存');refreshManage()}};
+$('#addArticle').onclick=async()=>{const title=norm($('#articleTitle').value);if(!title)return alert('請輸入文章標題');const {error}=await sb.rpc('v18_add_article',{p_slug:currentSlug,p_password:currentPassword,p_title:title,p_category:$('#articleCategory').value,p_content:norm($('#articleContent').value),p_url:norm($('#articleUrl').value),p_pinned:$('#articlePinned').checked});if(error)return alert(error.message);$('#articleTitle').value='';$('#articleContent').value='';$('#articleUrl').value='';$('#articlePinned').checked=false;refreshManage()};
+
 async function refreshManage(){const {data,error}=await sb.rpc('v17_manager_snapshot',{p_slug:currentSlug,p_password:currentPassword});if(error)return alert(error.message);currentSnapshot=data;renderManage();renderEvents()}
 window.togglePaid=async(pid,status)=>{const {error}=await sb.rpc('v17_set_payment',{p_slug:currentSlug,p_password:currentPassword,p_participant_id:pid,p_status:status});if(error)alert(error.message);else refreshManage()};
 $('#manageAddExtraFee').onclick=()=>{manageExtraFeeDrafts=readExtra('#manageExtraFees','mExtra');manageExtraFeeDrafts.push({name:'',total:0,split:Math.max(1,+($('#mTotalPeople').value||1)),note:''});renderManageExtraFees(manageExtraFeeDrafts.map(x=>({name:x.name,total_amount:x.total,split_count:x.split,note:x.note})))};
@@ -565,10 +697,17 @@ window.openRegister=async slug=>{
  currentSlug=slug;$('#regTitle').textContent=data.name;$('#regMeta').textContent=`${data.start_date} — ${data.end_date}`;$('#regStatus').innerHTML=data.cancelled?'<span class="badge cancelled">⛔ 已取消</span>':`<span class="badge">${data.registration_open?'OPEN':'CLOSED'}</span>`;
  $('#activityInfo').innerHTML=`<div class="privacyBox"><strong>🔒 個人資料保存說明</strong><br>敏感個資僅供本次活動申請、聯絡及相關作業使用。<br><strong>活動結束 60 天後，系統將自動清除敏感個資。</strong><br>活動結束：${esc(data.end_date)}｜預計清除：${retentionDate(data.end_date)}</div>
  <div class="notice"><b>活動總人數：${data.total_people||0} 人</b><br>目前已填資料：${data.participant_count||0} 人</div>${data.itinerary?`<div class="card" style="box-shadow:none"><h3>行程內容</h3><div style="white-space:pre-wrap">${esc(data.itinerary)}</div></div>`:''}`;
+
+ const req=data.required_gear||[];
+ $('#departurePrepPublic').innerHTML=`<div class="prepGrid"><div class="prepCard"><h3>⏳ 活動倒數</h3><div class="countdownBig">${esc(countdownText(data.start_date))}</div><div class="muted">${esc(data.start_date)} 出發</div></div>${climateCard(data.mountain_area,data.start_date,data.mountain_name)}</div>${req.length?`<div class="requiredGearBox"><h3>⚠️ 本活動必備裝備</h3><div class="chips">${req.map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div></div>`:''}`;
+ $('#requiredGearConfirm').classList.toggle('hidden',!req.length);$('#gearAck').checked=false;
+ $('#publicArticles').innerHTML=(data.articles||[]).length?`<div class="card"><div class="kicker">Trip Info</div><h2>📚 行前資訊</h2>${data.articles.map(x=>`<div class="articleCard">${x.pinned?'<span class="pinned">📌 必讀</span>':''}<b>${esc(x.title)}</b> <span class="chip">${esc(x.category||'其他')}</span>${x.content?`<div style="white-space:pre-wrap">${esc(x.content)}</div>`:''}${x.url?`<div><a href="${esc(x.url)}" target="_blank" rel="noopener">查看分享連結 ↗</a></div>`:''}</div>`).join('')}</div>`:'';
+ renderChecklist(slug,req);
+
  $('#regForm').style.display=(!data.cancelled&&data.registration_open)?'block':'none';show('registerView');history.replaceState({},'',location.pathname+'?event='+slug);
 };
 $('#regForm').addEventListener('submit',async ev=>{
- ev.preventDefault();const f=new FormData(ev.target);
+ ev.preventDefault();const f=new FormData(ev.target);if(!$('#requiredGearConfirm').classList.contains('hidden')&&!$('#gearAck').checked)return alert('請先確認已閱讀本活動必備裝備需求');
  if(!confirm(`請確認資料：\n${f.get('name')}\n${f.get('birth')}\n${f.get('phone')}`))return;
  const args={p_slug:currentSlug,p_name:norm(f.get('name')),p_gender:f.get('gender'),p_birth_date:f.get('birth'),p_id_number:norm(f.get('idno')).toUpperCase(),p_phone:phone(f.get('phone')),p_address:norm(f.get('address')),p_email:norm(f.get('email')),p_emergency_name:norm(f.get('emergency_name')),p_emergency_relation:norm(f.get('emergency_relation')),p_emergency_phone:phone(f.get('emergency_phone')),p_experience:norm(f.get('experience')),p_recent_hikes:norm(f.get('recent_hikes')),p_high_altitude:norm(f.get('high_altitude')),p_diet:norm(f.get('diet')),p_transport_type:f.get('transport_type'),p_pickup_place:norm(f.get('pickup_place')),p_note:norm(f.get('note'))};
  const {data,error}=await sb.rpc('register_participant',args);if(error)return alert(error.message);
