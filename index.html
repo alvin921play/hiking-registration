@@ -839,7 +839,8 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 </div>
 <div id="departurePrepPublic"></div>
 <div class="requiredGearBox hidden" id="requiredGearConfirm">
-<label class="gearChoice"><input id="gearAck" type="checkbox"/> 我已閱讀並了解本活動必備裝備需求</label>
+<h3>🧑‍🏫 領隊要求裝備（必備）</h3>
+<div class="muted">以下為本次活動必要裝備，報名前請逐項確認已準備。</div>
 </div>
 <div id="publicArticles"></div>
 <div id="personalChecklist"></div>
@@ -858,7 +859,7 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 <label>最近三個月爬過什麼山<textarea name="recent_hikes" rows="4"></textarea></label>
 <label>3000m 以上高山經驗<select name="high_altitude"><option>無</option><option>1–2 次</option><option>3–5 次</option><option>5 次以上</option></select></label>
 <label>飲食需求<input name="diet" placeholder="無／素食／其他"/></label>
-<div class="grid"><label>集合方式<select name="transport_type"><option>自行前往</option><option>高鐵</option><option>火車</option><option>指定集合地點</option></select></label><label>上車／集合地點<input name="pickup_place" placeholder="自由填寫"/></label></div>
+<div class="grid"><label>集合方式<select name="transport_type"><option value="團體接駁">團體接駁</option><option value="自行前往">自行前往</option><option value="高鐵">高鐵</option><option value="火車">火車</option><option value="指定集合地點">指定集合地點</option></select></label><label>上車／集合地點<input name="pickup_place" placeholder="自由填寫"/></label></div>
 <label>備註<textarea name="note" rows="3"></textarea></label>
 <div class="privacyBox small">🔒 敏感個資將於活動結束 60 天後自動刪除。</div><button class="block">確認送出</button>
 </form>
@@ -1135,10 +1136,11 @@ function checklistKey(slug){return 'hiking-checklist-v18-'+slug}
 function renderChecklist(slug,required=[]){
  const box=$('#personalChecklist');if(!box)return;
  let saved={};try{saved=JSON.parse(localStorage.getItem(checklistKey(slug))||'{}')}catch(_){}
- const base=[...required,'登山背包','登山鞋／越野鞋','頭燈','雨具／防水外層','飲水','行動糧','離線地圖','行動電源','個人藥品','垃圾袋'].filter((v,i,a)=>a.indexOf(v)===i);
- box.innerHTML=`<div class="card"><div class="kicker">我的裝備清單</div><h2>🎒 我的裝備自檢</h2><div id="checkItems">${base.map(g=>`<label class="checkItem ${saved[g]?'done':''}"><input type="checkbox" data-g="${esc(g)}" ${saved[g]?'checked':''}><span>${required.includes(g)?'⚠️ ':''}${esc(g)}${required.includes(g)?'（活動必備）':''}</span></label>`).join('')}</div><div class="grid"><label>新增自己的裝備<input id="myGearAdd" placeholder="例如：咖啡、拖鞋"></label><div style="align-self:end"><button type="button" class="secondary" id="myGearAddBtn">＋ 新增</button></div></div></div>`;
- const save=()=>{const o={};$$('#checkItems input').forEach(x=>o[x.dataset.g]=x.checked);localStorage.setItem(checklistKey(slug),JSON.stringify(o));$$('#checkItems .checkItem').forEach(l=>l.classList.toggle('done',l.querySelector('input').checked))};
- $$('#checkItems input').forEach(x=>x.onchange=save);
+ const basic=['登山背包','登山鞋／越野鞋','頭燈','雨具／防水外層','飲水','行動糧','離線地圖','行動電源','個人藥品','垃圾袋'].filter(g=>!required.includes(g));
+ const reqHtml=required.length?`<div class="card"><div class="kicker">領隊要求</div><h2>🧑‍🏫 領隊要求裝備（必備）</h2><p class="muted">以下為本次活動必要裝備，請逐項確認已準備；未全部確認無法完成報名。</p><div id="leaderRequiredGear">${required.map(g=>`<label class="checkItem ${saved[g]?'done':''}"><input type="checkbox" data-required="1" data-g="${esc(g)}" ${saved[g]?'checked':''}><span>⚠️ ${esc(g)}</span></label>`).join('')}</div></div>`:'';
+ box.innerHTML=reqHtml+`<div class="card"><div class="kicker">我的裝備清單</div><h2>🎒 我的裝備自檢</h2><p class="muted">基本裝備與個人物品自我檢查，不作為報名強制條件。</p><div id="checkItems">${basic.map(g=>`<label class="checkItem ${saved[g]?'done':''}"><input type="checkbox" data-g="${esc(g)}" ${saved[g]?'checked':''}><span>${esc(g)}</span></label>`).join('')}</div><div class="grid"><label>新增自己的裝備<input id="myGearAdd" placeholder="例如：咖啡、拖鞋"></label><div style="align-self:end"><button type="button" class="secondary" id="myGearAddBtn">＋ 新增</button></div></div></div>`;
+ const save=()=>{const o={};$$('#personalChecklist input[data-g]').forEach(x=>o[x.dataset.g]=x.checked);localStorage.setItem(checklistKey(slug),JSON.stringify(o));$$('#personalChecklist .checkItem').forEach(l=>l.classList.toggle('done',l.querySelector('input').checked))};
+ $$('#personalChecklist input[data-g]').forEach(x=>x.onchange=save);
  $('#myGearAddBtn').onclick=()=>{const g=norm($('#myGearAdd').value);if(!g)return;const d=document.createElement('label');d.className='checkItem';d.innerHTML=`<input type="checkbox" data-g="${esc(g)}"><span>${esc(g)}</span>`;$('#checkItems').appendChild(d);d.querySelector('input').onchange=save;$('#myGearAdd').value='';save()};
 }
 
@@ -1367,14 +1369,14 @@ window.openRegister=async slug=>{
  $('#v19TripSummaryGrid').innerHTML=briefItems.map(x=>`<div class="tripSummaryItem"><div class="small muted">${x[0]}</div><b>${esc(x[1])}</b></div>`).join('')+(data.trip_note?`<div class="tripSummaryItem" style="grid-column:1/-1"><div class="small muted">📝 行前補充</div><div style="white-space:pre-wrap">${esc(data.trip_note)}</div></div>`:'');
 
  $('#departurePrepPublic').innerHTML=`<div class="prepGrid"><div class="prepCard"><h3>⏳ 活動倒數</h3><div class="countdownBig">${esc(countdownText(data.start_date))}</div><div class="muted">${esc(data.start_date)} 出發</div></div>${climateCard(data.mountain_area,data.start_date,data.mountain_name)}</div>${req.length?`<div class="requiredGearBox"><h3>⚠️ 本活動必備裝備</h3><div class="chips">${req.map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div></div>`:''}`;
- $('#requiredGearConfirm').classList.toggle('hidden',!req.length);$('#gearAck').checked=false;
+ $('#requiredGearConfirm').classList.toggle('hidden',!req.length);
  $('#publicArticles').innerHTML=(data.articles||[]).length?`<div class="card"><div class="kicker">行前資訊</div><h2>📚 行前資訊</h2>${data.articles.map(x=>`<div class="articleCard">${x.pinned?'<span class="pinned">📌 必讀</span>':''}<b>${esc(x.title)}</b> <span class="chip">${esc(x.category||'其他')}</span>${x.content?`<div style="white-space:pre-wrap">${esc(x.content)}</div>`:''}${x.url?`<div><a href="${esc(x.url)}" target="_blank" rel="noopener">查看分享連結 ↗</a></div>`:''}</div>`).join('')}</div>`:'';
  renderChecklist(slug,req);
 
  $('#regForm').style.display=(!data.cancelled&&data.registration_open)?'block':'none';show('registerView');history.replaceState({},'',location.pathname+'?event='+slug);
 };
 $('#regForm').addEventListener('submit',async ev=>{
- ev.preventDefault();const f=new FormData(ev.target);if(!$('#requiredGearConfirm').classList.contains('hidden')&&!$('#gearAck').checked)return alert('請先確認已閱讀本活動必備裝備需求');
+ ev.preventDefault();const f=new FormData(ev.target);const missingReq=$$('#leaderRequiredGear input[data-required="1"]').filter(x=>!x.checked);if(missingReq.length)return alert('領隊要求裝備為本次活動必備，請逐項確認已準備後再報名。');
  if(!confirm(`請確認資料：\n${f.get('name')}\n${f.get('birth')}\n${f.get('phone')}`))return;
  const args={p_slug:currentSlug,p_name:norm(f.get('name')),p_gender:f.get('gender'),p_birth_date:f.get('birth'),p_id_number:norm(f.get('idno')).toUpperCase(),p_phone:phone(f.get('phone')),p_address:norm(f.get('address')),p_email:norm(f.get('email')),p_emergency_name:norm(f.get('emergency_name')),p_emergency_relation:norm(f.get('emergency_relation')),p_emergency_phone:phone(f.get('emergency_phone')),p_experience:norm(f.get('experience')),p_recent_hikes:norm(f.get('recent_hikes')),p_high_altitude:norm(f.get('high_altitude')),p_diet:norm(f.get('diet')),p_transport_type:f.get('transport_type'),p_pickup_place:norm(f.get('pickup_place')),p_note:norm(f.get('note'))};
  const {data,error}=await sb.rpc('register_participant',args);if(error)return alert(error.message);
