@@ -905,7 +905,7 @@ try{
  if(window.supabase && window.APP_CONFIG?.SUPABASE_URL && window.APP_CONFIG?.SUPABASE_PUBLISHABLE_KEY){
   sb=window.supabase.createClient(APP_CONFIG.SUPABASE_URL,APP_CONFIG.SUPABASE_PUBLISHABLE_KEY);
  }
-}catch(e){ console.warn('Supabase 尚未連線',e); }
+}catch(e){ console.warn('Supabase 尚未連線',e); } window.APP_DB=sb;
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const norm=s=>String(s||'').trim(), phone=s=>String(s||'').replace(/\D/g,'');
 const views=['managerView','manageView','registerView','recoverView','editView'];
@@ -1366,7 +1366,7 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
 </script>
 <script>
 (function(){
-  const byId=id=>document.getElementById(id);
+  const sb=window.APP_DB||null; const byId=id=>document.getElementById(id);
 
   
   window.renderPublicArticles=async function renderPublicArticles(){
@@ -1436,7 +1436,7 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
     if(!title)return alert('請輸入分享標題');
     if(!url && !content)return alert('網址或簡短說明至少填一項');
     if(url && !/^https?:\/\//i.test(url))return alert('網址請以 http:// 或 https:// 開頭');
-    if(!sb)return alert('目前無法連線資料庫');
+    if(!sb)return alert('目前無法連線 Supabase，請確認 config.js 與部署設定。');
     const btn=byId('v195ArticleSubmit'); btn.disabled=true; btn.textContent='發布中…';
     try{
       const {error}=await sb.rpc('v20_add_public_article',{p_title:title,p_category:category,p_url:url,p_content:content});
@@ -1626,13 +1626,13 @@ document.addEventListener('click', function(e){
 <div class="summaryStrip" id="v20AdminStats"></div>
 <div class="v20AdminGrid">
 <section class="v20AdminCard"><div class="v20SectionHead"><h3>🏔️ 全部活動</h3><button id="v21AdminCreateActivity" type="button">＋ 新增活動</button></div><div id="v20AdminActivities"></div></section>
-<section class="v20AdminCard"><h3>📚 公共文章</h3><div id="v20AdminArticles"></div></section>
+<section class="v20AdminCard"><h3>📚 公共文章</h3><button id="v21AdminCreateArticle" type="button">＋ 新增文章</button><div id="v20AdminArticles"></div></section>
 </div>
 </div>
 </div>
 <script>
 (function(){
-  const $id=id=>document.getElementById(id);
+  const sb=window.APP_DB||null; const $id=id=>document.getElementById(id);
   const trigger=$id('v20AdminTrigger'), login=$id('v20AdminLogin'), center=$id('v20AdminCenter');
   if(!trigger||!login||!center)return;
   let clicks=0, clickTimer=null, adminToken=sessionStorage.getItem('v20_admin_token')||'';
@@ -1692,7 +1692,7 @@ document.addEventListener('click', function(e){
   $id('v20AdminLoginBtn').onclick=async()=>{
     const pw=$id('v20AdminPassword').value;
     if(!pw)return;
-    if(!sb)return alert('目前無法連線資料庫');
+    if(!sb)return alert('目前無法連線 Supabase，請確認 config.js 與部署設定。');
     const btn=$id('v20AdminLoginBtn');btn.disabled=true;btn.textContent='驗證中…';
     const {data,error}=await sb.rpc('v20_admin_login',{p_password:pw});
     btn.disabled=false;btn.textContent='進入管理中心';
@@ -1700,17 +1700,17 @@ document.addEventListener('click', function(e){
     adminToken=String(data||'');sessionStorage.setItem('v20_admin_token',adminToken);
     $id('v20AdminPassword').value='';$id('v20AdminLoginMsg').textContent='';
     login.classList.remove('open');center.classList.add('open');
-    try{await loadAdmin()}catch(e){console.error(e);center.classList.remove('open');login.classList.add('open');$id('v20AdminLoginMsg').textContent='密碼驗證成功，但管理中心載入失敗：'+(e?.message||e)}
+    try{await loadAdmin()}catch(e){console.error(e);$id('v20AdminStats').innerHTML='<div class="muted">管理資料載入失敗：'+escAdmin(e?.message||e)+'</div>'}
   };
   $id('v20AdminPassword').addEventListener('keydown',e=>{if(e.key==='Enter')$id('v20AdminLoginBtn').click()});
 
   // v21 complete site-admin CRUD
   const actModal=$id('v21ActivityModal'), artModal=$id('v21ArticleModal');
   document.querySelectorAll('.v21ModalClose').forEach(b=>b.onclick=()=>b.closest('.v20Overlay').classList.remove('open'));
-  $id('v21AdminCreateActivity').onclick=()=>{
+  if($id('v21AdminCreateActivity'))$id('v21AdminCreateActivity').onclick=()=>{
     const f=$id('v21ActivityForm');f.reset();f.activity_id.value='';$id('v21ActivityTitle').textContent='新增活動';actModal.classList.add('open');
   };
-  $id('v21AdminCreateArticle').onclick=()=>{
+  if($id('v21AdminCreateArticle'))$id('v21AdminCreateArticle').onclick=()=>{
     const f=$id('v21ArticleForm');f.reset();f.article_id.value='';$id('v21ArticleTitle').textContent='新增文章';artModal.classList.add('open');
   };
   $id('v21ActivityForm').onsubmit=async e=>{
