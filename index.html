@@ -1,126 +1,607 @@
--- v17 線上完整版整合層
--- 在 Supabase SQL Editor 新查詢執行一次
 
-create extension if not exists pgcrypto with schema extensions;
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>登山報名資料｜Outdoor Prototype</title>
+<style>
+*{box-sizing:border-box}
+:root{--paper:#eee5d2;--cream:#fbf4e5;--forest:#244632;--forest2:#385f46;--ink:#1f2c24;--orange:#d96a36;--mustard:#d5a63c;--line:#2d4636;--muted:#6e7165}
+body{margin:0;font-family:Arial,"Noto Sans TC",sans-serif;color:var(--ink);background:var(--paper)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.08;background:repeating-linear-gradient(0deg,transparent 0 3px,#1f2c24 4px)}
+.wrap{max-width:1080px;margin:auto;padding:18px 12px 50px}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.brand{font-weight:900;letter-spacing:.08em}.badge{display:inline-block;border:1.5px solid var(--line);padding:5px 8px;font-size:11px;font-weight:900;letter-spacing:.06em;background:#e7dcc2}
+.hero{position:relative;overflow:hidden;background:var(--forest);color:#fff6df;border:3px solid var(--ink);padding:28px;min-height:245px;box-shadow:8px 8px 0 #b8aa89;margin-bottom:18px}
+.hero:after{content:"▲   ▲▲       ▲   ▲▲";position:absolute;bottom:-22px;left:-5px;right:0;font-size:110px;line-height:.55;color:#d7c38f;opacity:.2;white-space:nowrap}
+.kicker{font-size:11px;font-weight:900;letter-spacing:.18em;color:var(--orange);text-transform:uppercase}
+.hero .kicker{color:#e9c864}.hero h1{font-family:Georgia,"Noto Serif TC",serif;font-size:clamp(40px,7vw,72px);line-height:.92;margin:12px 0;position:relative;z-index:1}.hero p{position:relative;z-index:1;color:#d9e0d7}
+.card{background:var(--cream);border:2px solid var(--line);padding:20px;margin-bottom:16px;box-shadow:5px 5px 0 #b9ab8d}
+h2,h3{font-family:Georgia,"Noto Serif TC",serif;margin:5px 0 14px}h2{font-size:27px}h3{font-size:22px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+label{display:block;font-size:12px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;margin:11px 0}
+input,select,textarea{width:100%;padding:12px;margin-top:6px;border:2px solid var(--line);background:#fffaf0;font-size:16px;border-radius:0;font-family:inherit}
+textarea{resize:vertical;line-height:1.65}
+button,.btn{display:inline-block;border:2px solid var(--ink);background:var(--forest);color:#fff6df;padding:11px 14px;font-weight:900;text-decoration:none;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+button:hover,.btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.secondary{background:var(--mustard);color:var(--ink)}.ghost{background:#e8ddc5;color:var(--ink)}.danger{background:#8d3d34}.block{width:100%;display:block;margin-top:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.event{background:#f7eedc;border:2px solid var(--line);padding:17px;margin:13px 0;box-shadow:5px 5px 0 #b7a886;position:relative}.event:after{content:"TRIP CARD";position:absolute;right:10px;top:8px;color:var(--orange);font-weight:900;font-size:10px;letter-spacing:.15em}.event h3{font-size:28px;margin-bottom:4px}
+.meta{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.muted{color:var(--muted)}.small{font-size:12px}
+.stat{background:#e6dbc0;border:2px solid var(--line);padding:12px}.stat b{display:block;font-size:25px;font-family:Georgia,serif}.stat span{font-size:11px;font-weight:900;letter-spacing:.08em}
+.tablewrap{overflow:auto;border:2px solid var(--line)}table{border-collapse:collapse;width:100%;white-space:nowrap}th,td{padding:10px;border-bottom:1px solid #d0c5ac;text-align:left;font-size:13px}th{background:var(--forest);color:#fff6df;font-size:11px;letter-spacing:.07em}
+.hidden{display:none!important}.notice{border:2px dashed var(--line);background:#e6dbc0;padding:12px}.log{padding:10px 0;border-bottom:1px dashed #9d947f}.linkbox{font-family:monospace;font-size:12px;word-break:break-all;background:#ded1b5;border:1.5px dashed var(--line);padding:9px;margin:9px 0}
+@media(max-width:700px){.grid,.grid3{grid-template-columns:1fr}.wrap{padding:10px 8px 40px}.hero{padding:20px;min-height:210px}.card{padding:16px 13px}.actions>*{flex:1}}
 
-alter table public.activities add column if not exists cover_image text;
-alter table public.activities add column if not exists updated_at timestamptz not null default now();
+.coverWrap{position:relative;border:3px solid var(--ink);background:var(--forest);margin-bottom:18px;box-shadow:8px 8px 0 #b8aa89;overflow:hidden}
+.coverWrap img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.coverFallback{aspect-ratio:16/9;display:flex;align-items:flex-end;padding:24px;background:linear-gradient(145deg,#244632,#385f46);color:#fff6df;position:relative;overflow:hidden}
+.coverFallback:after{content:"▲   ▲▲       ▲";position:absolute;left:-10px;right:0;bottom:-24px;font-size:110px;opacity:.18;color:#e1cc93;white-space:nowrap}
+.coverOverlay{position:absolute;left:0;right:0;bottom:0;padding:18px;background:linear-gradient(transparent,rgba(20,31,24,.78));color:#fff6df}
+.coverOverlay h2{margin:0 0 5px;color:#fff6df}
+.summaryStrip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:12px}
+.summaryBox{border:2px solid var(--line);background:#e6dbc0;padding:12px}
+.summaryBox b{display:block;font-family:Georgia,serif;font-size:26px}
+.summaryBox span{font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase}
+.feeGrid{display:grid;grid-template-columns:1.4fr .9fr .9fr .9fr;gap:8px;align-items:end;margin:10px 0}
+.photoPreview{margin-top:10px;border:2px dashed var(--line);padding:8px;background:#e9dfca}
+.photoPreview img{width:100%;max-height:240px;object-fit:cover;display:block}
+@media(max-width:760px){.summaryStrip{grid-template-columns:repeat(2,minmax(0,1fr))}.feeGrid{grid-template-columns:1fr 1fr}}
 
-create or replace function public.v17_check_password(p_slug text,p_password text)
-returns uuid language plpgsql security definer set search_path=public,extensions as $$
-declare v_id uuid; v_hash text;
-begin
- select id,admin_password_hash into v_id,v_hash from public.activities where slug=upper(trim(p_slug)) limit 1;
- if v_id is null or v_hash is null or extensions.crypt(p_password,v_hash)<>v_hash then raise exception '活動管理密碼錯誤'; end if;
- return v_id;
-end$$;
 
-create or replace function public.v17_create_activity(p_payload jsonb)
-returns jsonb language plpgsql security definer set search_path=public,extensions as $$
-declare v_id uuid;v_slug text;f jsonb;i int:=0;
-begin
- if trim(coalesce(p_payload->>'name',''))='' then raise exception '活動名稱不可空白';end if;
- if coalesce(p_payload->>'admin_password','')='' then raise exception '管理密碼不可空白';end if;
- v_slug:=public.make_activity_slug();
- insert into public.activities(slug,name,start_date,end_date,cutoff_at,total_people,itinerary,admin_password_hash,registration_open,cancelled,data_locked)
- values(v_slug,trim(p_payload->>'name'),(p_payload->>'start')::date,(p_payload->>'end')::date,nullif(p_payload->>'cutoff','')::timestamptz,greatest(1,coalesce((p_payload->>'total_people')::int,1)),p_payload->>'itinerary',extensions.crypt(p_payload->>'admin_password',extensions.gen_salt('bf')),true,false,false)
- returning id into v_id;
- for f in select * from jsonb_array_elements(coalesce(p_payload->'fees','[]'::jsonb)) loop
-  if trim(coalesce(f->>'name',''))<>'' then
-   insert into public.fees(activity_id,name,total_amount,split_count,note,sort_order) values(v_id,trim(f->>'name'),coalesce((f->>'total')::numeric,0),greatest(1,coalesce((f->>'split')::int,1)),f->>'note',i);i:=i+1;
-  end if;
- end loop;
- return jsonb_build_object('id',v_id,'slug',v_slug);
-end$$;
+/* ===== v13 Mobile-first layout ===== */
+html{-webkit-text-size-adjust:100%}
+body{overflow-x:hidden}
+.wrap{width:100%;max-width:1080px;padding:12px 10px 44px}
 
-create or replace function public.v17_public_activity(p_slug text)
-returns jsonb language sql security definer set search_path=public as $$
- select jsonb_build_object('slug',a.slug,'name',a.name,'start_date',a.start_date,'end_date',a.end_date,'cutoff_at',a.cutoff_at,'total_people',a.total_people,'itinerary',a.itinerary,'registration_open',(a.registration_open and (a.cutoff_at is null or now()<=a.cutoff_at)),'cancelled',a.cancelled,'participant_count',(select count(*) from public.participants p where p.activity_id=a.id))
- from public.activities a where a.slug=upper(trim(p_slug)) limit 1
-$$;
+.card{padding:16px 13px;margin-bottom:14px}
+.hero{min-height:200px;padding:20px 16px;box-shadow:4px 4px 0 #b8aa89}
+.hero h1{font-size:clamp(36px,12vw,62px);line-height:.92}
+.top{align-items:flex-start}
+.brand{font-size:15px;line-height:1.3}
+.badge{font-size:10px;padding:5px 7px}
 
-create or replace function public.v17_manager_snapshot(p_slug text,p_password text)
-returns jsonb language plpgsql security definer set search_path=public,extensions as $$
-declare v_id uuid;res jsonb;
-begin
- v_id:=public.v17_check_password(p_slug,p_password);
- select jsonb_build_object(
-  'activity',to_jsonb(a)-'admin_password_hash',
-  'fees',coalesce((select jsonb_agg(to_jsonb(f) order by f.sort_order,f.created_at) from public.fees f where f.activity_id=v_id),'[]'::jsonb),
-  'participants',coalesce((select jsonb_agg(to_jsonb(p)||jsonb_build_object('amount_due',(select coalesce(sum(case when pf.included then round(f.total_amount/nullif(f.split_count,0),0) else 0 end),0) from public.participant_fees pf join public.fees f on f.id=pf.fee_id where pf.participant_id=p.id)) order by p.created_at) from public.participants p where p.activity_id=v_id),'[]'::jsonb),
-  'logs',coalesce((select jsonb_agg(to_jsonb(l) order by l.created_at desc) from public.change_logs l where l.activity_id=v_id),'[]'::jsonb)
- ) into res from public.activities a where a.id=v_id;
- return res;
-end$$;
+.grid,.grid3,.feeGrid,.summaryStrip{
+  grid-template-columns:1fr;
+  gap:10px;
+}
+label{
+  margin:10px 0 4px;
+  font-size:12px;
+  line-height:1.35;
+}
+input,select,textarea{
+  width:100%;
+  min-height:48px;
+  font-size:16px;
+  padding:12px 11px;
+}
+textarea{min-height:110px}
 
-create or replace function public.v17_update_activity(p_slug text,p_password text,p_patch jsonb)
-returns boolean language plpgsql security definer set search_path=public,extensions as $$
-declare v_id uuid;
-begin
- v_id:=public.v17_check_password(p_slug,p_password);
- update public.activities set name=coalesce(nullif(trim(p_patch->>'name'),''),name),start_date=coalesce((p_patch->>'start')::date,start_date),end_date=coalesce((p_patch->>'end')::date,end_date),cutoff_at=nullif(p_patch->>'cutoff','')::timestamptz,total_people=greatest(1,coalesce((p_patch->>'total_people')::int,total_people)),updated_at=now() where id=v_id;
- return true;
-end$$;
+button,.btn{
+  min-height:46px;
+  font-size:15px;
+  padding:12px 14px;
+}
+.actions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+.actions>*{width:100%}
 
-create or replace function public.v17_activity_action(p_slug text,p_password text,p_action text)
-returns boolean language plpgsql security definer set search_path=public,extensions as $$
-declare v_id uuid;
-begin
- v_id:=public.v17_check_password(p_slug,p_password);
- if p_action='toggle_open' then update public.activities set registration_open=not registration_open where id=v_id;
- elsif p_action='toggle_cancel' then update public.activities set cancelled=not cancelled where id=v_id;
- elsif p_action='toggle_lock' then update public.activities set data_locked=not data_locked where id=v_id;
- else raise exception '未知操作';end if;
- return true;
-end$$;
+.summaryStrip{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.summaryBox{
+  padding:11px 10px;
+}
+.summaryBox b{font-size:24px}
 
-create or replace function public.v17_replace_fees(p_slug text,p_password text,p_fees jsonb)
-returns boolean language plpgsql security definer set search_path=public,extensions as $$
-declare v_id uuid;f jsonb;i int:=0;p record;new_fee uuid;
-begin
- v_id:=public.v17_check_password(p_slug,p_password);
- delete from public.participant_fees pf using public.fees x where pf.fee_id=x.id and x.activity_id=v_id;
- delete from public.fees where activity_id=v_id;
- for f in select * from jsonb_array_elements(coalesce(p_fees,'[]'::jsonb)) loop
-  if trim(coalesce(f->>'name',''))<>'' then
-   insert into public.fees(activity_id,name,total_amount,split_count,note,sort_order) values(v_id,trim(f->>'name'),coalesce((f->>'total')::numeric,0),greatest(1,coalesce((f->>'split')::int,1)),f->>'note',i) returning id into new_fee;
-   for p in select id,transport_type from public.participants where activity_id=v_id loop
-    insert into public.participant_fees(participant_id,fee_id,included) values(p.id,new_fee,not(trim(f->>'name')='接駁' and p.transport_type='自行前往'));
-   end loop;i:=i+1;
-  end if;
- end loop;
- return true;
-end$$;
+.event{
+  padding:14px 12px;
+  box-shadow:4px 4px 0 #b7a886;
+}
+.event h3{font-size:25px}
+.event:after{font-size:9px;right:8px;top:7px}
 
-create or replace function public.v17_set_payment(p_slug text,p_password text,p_participant_id uuid,p_status text)
-returns boolean language plpgsql security definer set search_path=public,extensions as $$
-declare v_id uuid;
-begin
- v_id:=public.v17_check_password(p_slug,p_password);
- update public.participants set payment_status=case when p_status='已付款' then '已付款' else '未付款' end where id=p_participant_id and activity_id=v_id;
- if not found then raise exception '找不到參加者';end if;
- insert into public.change_logs(activity_id,participant_id,detail) values(v_id,p_participant_id,'領隊調整付款狀態：'||p_status);
- return true;
-end$$;
+.coverWrap{
+  margin-bottom:14px;
+  box-shadow:4px 4px 0 #b8aa89;
+}
+.coverWrap img{aspect-ratio:16/10}
+.coverOverlay{padding:14px}
+.coverOverlay h2{font-size:24px}
 
-create or replace function public.v17_delete_activity(p_slug text,p_password text)
-returns boolean language plpgsql security definer set search_path=public,extensions as $$
-declare v_id uuid;
-begin
- v_id:=public.v17_check_password(p_slug,p_password);
- delete from public.change_logs where activity_id=v_id;
- delete from public.participant_fees where participant_id in(select id from public.participants where activity_id=v_id);
- delete from public.participants where activity_id=v_id;
- delete from public.fees where activity_id=v_id;
- delete from public.activities where id=v_id;
- return true;
-end$$;
+.notice,.warning{font-size:14px;line-height:1.55}
+.linkbox{font-size:11px}
 
-grant execute on function public.v17_create_activity(jsonb) to anon,authenticated;
-grant execute on function public.v17_public_activity(text) to anon,authenticated;
-grant execute on function public.v17_manager_snapshot(text,text) to anon,authenticated;
-grant execute on function public.v17_update_activity(text,text,jsonb) to anon,authenticated;
-grant execute on function public.v17_activity_action(text,text,text) to anon,authenticated;
-grant execute on function public.v17_replace_fees(text,text,jsonb) to anon,authenticated;
-grant execute on function public.v17_set_payment(text,text,uuid,text) to anon,authenticated;
-grant execute on function public.v17_delete_activity(text,text) to anon,authenticated;
+.tablewrap{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  border:2px solid var(--line);
+}
+table{min-width:760px}
+th,td{padding:9px 8px}
+
+.photoPreview img{max-height:220px}
+
+/* 報名表在手機上更像表單，而不是海報 */
+#registerView .card,
+#recoverView .card,
+#editView .card{
+  box-shadow:3px 3px 0 #b9ab8d;
+}
+#regForm label,
+#recoverForm label,
+#editForm label{
+  text-transform:none;
+  letter-spacing:0;
+  font-size:14px;
+}
+#regForm input,
+#regForm select,
+#regForm textarea,
+#recoverForm input,
+#editForm input,
+#editForm select,
+#editForm textarea{
+  background:#fffdf6;
+}
+
+/* 建立活動 / 活動管理：手機預設單欄 */
+#createForm .grid,
+#manageView .grid{
+  grid-template-columns:1fr;
+}
+#createForm .feeGrid,
+#manageView .feeGrid{
+  grid-template-columns:1fr;
+}
+#createForm .feeGrid label[style*="grid-column"],
+#manageView .feeGrid label[style*="grid-column"]{
+  grid-column:auto!important;
+}
+
+/* 桌機才恢復多欄 */
+@media(min-width:720px){
+  .wrap{padding:20px 14px 54px}
+  .card{padding:20px}
+  .hero{min-height:245px;padding:28px}
+  .top{align-items:center}
+  .brand{font-size:18px}
+  .grid{grid-template-columns:1fr 1fr}
+  .grid3{grid-template-columns:repeat(3,1fr)}
+  .feeGrid{grid-template-columns:1.4fr .9fr .9fr .9fr}
+  .summaryStrip{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .actions{display:flex;flex-wrap:wrap}
+  .actions>*{width:auto}
+  .coverWrap img{aspect-ratio:16/9}
+  #createForm .grid,
+  #manageView .grid{grid-template-columns:1fr 1fr}
+  #createForm .feeGrid,
+  #manageView .feeGrid{grid-template-columns:1.4fr .9fr .9fr .9fr}
+}
+
+
+/* v14 privacy + per-event password + application copy */
+.privacyBox{border:3px solid var(--forest);background:#e8dfc9;padding:14px;margin:14px 0;line-height:1.6}
+.privacyBox strong{color:var(--forest)}
+.copyField{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-bottom:1px dashed var(--line);padding:9px 0}
+.copyField .val{font-size:16px;word-break:break-all}
+.copyBtn{min-width:72px}
+.adminGate{max-width:520px;margin:0 auto}
+.personCard{border:2px solid var(--line);padding:14px;background:#f4ecd9;margin:12px 0}
+.personNav{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sensitiveExpired{opacity:.68;font-style:italic}
+@media(min-width:720px){.personNav{display:flex}.copyField{grid-template-columns:180px 1fr auto}}
+
+
+/* v15 首頁防誤按 */
+.launchGrid{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.launchCard{border:3px solid var(--ink);background:#eee4ce;padding:18px;box-shadow:4px 4px 0 #b7a886}
+.launchCard.primary{background:var(--forest);color:#fff6df}
+.launchCard.primary h2,.launchCard.primary .muted{color:#fff6df}
+.launchCard h2{margin:4px 0 7px;font-size:27px}.launchIcon{font-size:30px}
+.launchCard button{width:100%;margin-top:12px}.createConfirm{max-width:600px;margin:0 auto}
+@media(min-width:760px){.launchGrid{grid-template-columns:1.15fr 1fr 1fr}.launchCard{min-height:235px;display:flex;flex-direction:column}.launchCard button{margin-top:auto}}
+
+
+.createExtraFee{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px}
+#createAddExtraFee{margin:8px 0 14px}
+
+.manageExtraFee{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px}
+#manageAddExtraFee{margin:8px 0 12px}
+
+.dangerZone{margin-top:18px;border-color:#8d3f32}
+button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
+
+.badge.cancelled{background:#8d3f32;color:#fff;border-color:#5d2c24}
+.event.cancelledEvent{opacity:.88;border-color:#8d3f32}
+.cancelBanner{background:#8d3f32;color:#fff;padding:12px 14px;border:2px solid #5d2c24;margin:10px 0;font-weight:800}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><div class="brand">△ TRAIL REGISTER</div><span class="badge">NO LOGIN / TEST</span></div>
+
+  <section class="hero">
+    <div class="kicker">Urban Outdoor Field System</div>
+    <h1>HIKING<br>REGISTRATION</h1>
+    <p>建立活動、分享報名網址、收集與管理隊員資料。</p>
+  </section>
+
+  <section id="managerView">
+<div id="homeLauncher">
+  <div class="launchGrid">
+    <div class="launchCard primary"><div class="launchIcon">🏕</div><div class="kicker">Participant</div><h2>我要報名</h2><p class="muted">拿到活動連結後直接填寫。正式上線時，不需要先進管理首頁。</p><button type="button" id="goJoin">如何報名</button></div>
+    <div class="launchCard"><div class="launchIcon">🔒</div><div class="kicker">Leader</div><h2>活動管理</h2><p class="muted">查看既有活動，輸入該活動自己的管理密碼。</p><button type="button" class="secondary" id="goManage">查看活動</button></div>
+    <div class="launchCard"><div class="launchIcon">＋</div><div class="kicker">New Trip</div><h2>建立新活動</h2><p class="muted">只有這次活動的建立者／領隊才需要按這裡。</p><button type="button" class="ghost" id="goCreate">建立新活動</button></div>
+  </div>
+</div>
+<div id="joinHelp" class="hidden"><div class="card"><button type="button" class="ghost homeReturn">← 返回</button><div class="kicker">Registration</div><h2>我要報名</h2><div class="notice">請直接開啟領隊傳給你的活動報名連結。</div><p class="muted small">目前單檔測試版尚未產生真正網路網址，可從活動列表的「模擬報名網址」測試。</p><button type="button" id="joinDemo">顯示測試活動</button></div></div>
+<div id="createConfirm" class="hidden"><div class="card createConfirm"><button type="button" class="ghost homeReturn">← 返回</button><div class="kicker">Before Creating</div><h2>建立新的登山活動？</h2><p>這個功能給本次活動的建立者／領隊使用。</p><div class="warning">如果你只是要填寫別人的活動，請使用領隊提供的活動連結，不需要建立新活動。</div><div class="actions"><button type="button" id="confirmCreate">我是領隊，繼續建立</button><button type="button" class="secondary homeReturn">返回</button></div></div></div>
+<div id="managerTools" class="hidden"><button type="button" class="ghost homeReturn" style="margin-bottom:12px">← 返回首頁</button>
+
+    <div class="card">
+      <div class="kicker">Create a new trip</div>
+      <div id="createAnchor"></div><h2>建立活動</h2><p class="muted small">手機可直接一路往下填；照片、費用與行程都可以之後再修改。</p>
+      <form id="createForm">
+        <div class="grid">
+          <label>活動名稱<input name="name" required autocomplete="name" placeholder="例如：奇萊主北"></label>
+          <label>報名截止<input type="datetime-local" name="cutoff"></label>
+        </div>
+        <div class="grid">
+          <label>開始日期<input type="date" name="start" required></label>
+          <label>結束日期<input type="date" name="end" required></label>
+        </div>
+        <div class="grid">
+          <label>活動總人數<input type="number" name="total_people" min="1" inputmode="numeric" value="8" required></label>
+          <label>活動封面照片<input type="file" name="cover" accept="image/*"></label>
+        </div>
+        <div class="small muted">封面照片選填；建議使用橫式山景照片。</div>
+        <div id="createError" class="warning hidden" style="margin-top:12px"></div>
+        <div class="feeGrid">
+<label>住宿總額<input type="number" min="0" name="lodging_fee" value="0" inputmode="numeric"></label>
+<label>住宿分攤人數<input type="number" min="0" name="lodging_split" placeholder="自動"></label>
+<label style="grid-column:span 2">住宿說明<input name="lodging_note" placeholder="例如：向陽山屋"></label>
+</div>
+<div class="feeGrid">
+<label>接駁總額<input type="number" min="0" name="transport_fee" value="0" inputmode="numeric"></label>
+<label>接駁分攤人數<input type="number" min="0" name="transport_split" placeholder="自動"></label>
+<label style="grid-column:span 2">接駁說明<input name="transport_note" placeholder="例如：台北來回"></label>
+</div>
+<div class="feeGrid">
+<label>餐飲總額<input type="number" min="0" name="meal_fee" value="0" inputmode="numeric"></label>
+<label>餐飲分攤人數<input type="number" min="0" name="meal_split" placeholder="自動"></label>
+<label style="grid-column:span 2">餐飲說明<input name="meal_note" placeholder="例如：協作早晚餐"></label>
+</div>
+<div class="feeGrid">
+<label>其他費用名稱<input name="other_name" placeholder="例如：協作費"></label>
+<label>其他費用總額<input type="number" min="0" name="other_fee" value="0" inputmode="numeric"></label>
+<label>其他分攤人數<input type="number" min="0" name="other_split" placeholder="自動"></label>
+<label>其他說明<input name="other_note" placeholder="選填"></label>
+</div>
+        <div id="createExtraFees"></div>
+        <button type="button" class="secondary" id="createAddExtraFee">＋ 新增費用項目</button>
+        <div class="muted small" style="margin-top:6px">需要更多費用時再新增，不限項目數量。</div>
+
+<label>行程內容<textarea name="itinerary" rows="8" placeholder="直接把 LINE / 貼文行程貼在這裡"></textarea></label>
+<div class="privacyBox">
+<label>活動管理密碼＊<input type="text" name="admin_password" required autocomplete="new-password" placeholder="中文、英文、數字、符號皆可"></label>
+<div class="small"><strong>⚠ 請保存活動管理密碼</strong><br>系統無法協助找回管理密碼。</div>
+</div><div class="notice small">費用請填整團總額。系統會依實際分攤人數自動計算每人應付金額；自行前往者預設不分接駁費。</div><button type="submit" class="block">＋ 建立活動</button>
+      </form>
+    </div>
+    <div class="kicker">My field trips</div>
+    <h2>我的活動</h2>
+    <div id="eventAnchor"></div><div id="eventList"></div>
+  </div>
+</section>
+
+  <section id="manageView" class="hidden">
+    <div class="actions" style="margin-bottom:12px"><button class="ghost" id="backBtn">← 活動列表</button></div>
+    <div class="card">
+      <div class="kicker">Trip Control</div>
+      <h2 id="manageTitle"></h2>
+      <div id="manageSummary" class="summaryStrip"></div>
+      <div class="grid">
+        <label>活動名稱<input id="mName"></label>
+        <label>報名截止<input type="datetime-local" id="mCutoff"></label>
+      </div>
+      <div class="grid">
+        <label>活動總人數<input type="number" min="1" id="mTotalPeople"></label>
+        <label>更換封面照片<input type="file" accept="image/*" id="mCover"></label>
+      </div>
+      <div id="coverPreview"></div>
+      <div class="actions" style="margin-bottom:10px"><button type="button" class="ghost" id="removeCover">移除封面</button></div>
+      <div class="grid">
+        <label>開始日期<input type="date" id="mStart"></label>
+        <label>結束日期<input type="date" id="mEnd"></label>
+      </div>
+      <div class="actions">
+        <button id="saveEvent">儲存設定</button>
+        <button class="ghost" id="toggleOpen"></button>
+        <button class="ghost" id="toggleLock"></button>
+        <button class="ghost" id="toggleCancel"></button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="kicker">Leaders</div><h2>領隊</h2>
+      <p>目前：<b id="leadersText"></b></p>
+      <div class="actions"><select id="leaderSelect"></select><button id="addLeader">加入領隊</button></div>
+    </div>
+    <div class="card">
+      <div class="grid3">
+        <div class="stat"><span>Members</span><b id="countAll">0</b></div>
+        <div class="stat"><span>Complete</span><b id="countComplete">0</b></div>
+        <div class="stat"><span>Changed</span><b id="countChanged">0</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="kicker">Application Data</div>
+      <h2>📋 申請資料</h2>
+      <p class="muted small">領隊專用。逐欄複製到入園／入山申請網站；敏感個資刪除後將不再顯示。</p>
+      <div id="applicationData"></div>
+    </div>
+    <div class="card">
+      <div class="kicker">Cost Split</div><h2>費用分攤</h2>
+      <div class="feeGrid"><label>住宿總額<input type="number" min="0" id="fLodging"></label><label>分攤人數<input type="number" min="0" id="sLodging"></label><div class="notice" id="pLodging"></div></div>
+      <div class="feeGrid"><label>接駁總額<input type="number" min="0" id="fTransport"></label><label>分攤人數<input type="number" min="0" id="sTransport"></label><div class="notice" id="pTransport"></div></div>
+      <div class="feeGrid"><label>餐飲總額<input type="number" min="0" id="fMeal"></label><label>分攤人數<input type="number" min="0" id="sMeal"></label><div class="notice" id="pMeal"></div></div>
+      <div class="feeGrid"><label>其他費用名稱<input id="fOtherName"></label><label>其他總額<input type="number" min="0" id="fOther"></label><label>分攤人數<input type="number" min="0" id="sOther"></label><div class="notice" id="pOther"></div></div>
+      <div id="manageExtraFees"></div>
+      <button type="button" class="secondary" id="manageAddExtraFee">＋ 新增費用項目</button>
+      <button id="saveFees">儲存費用設定</button>
+    </div>
+    <div class="card">
+      <div class="toolbar"><div><div class="kicker">Member list</div><h2>報名名單</h2></div><button id="exportBtn">EXPORT CSV</button></div>
+      <div class="tablewrap"><table><thead><tr><th>姓名</th><th>生日</th><th>身分證</th><th>電話</th><th>緊急聯絡人</th><th>電話</th><th>應付</th><th>費用 / 付款</th></tr></thead><tbody id="memberRows"></tbody></table></div>
+    </div>
+    <div class="card"><div class="kicker">Change log</div><h2>修改歷史</h2><div id="history"></div></div>
+  
+    <div class="card dangerZone">
+      <h3>⚠️ 刪除活動</h3>
+      <p class="muted small">刪除後會一併移除此活動、報名人員及修改紀錄，無法復原。</p>
+      <button type="button" class="danger" id="deleteEventBtn">刪除此活動</button>
+    </div>
+</section>
+
+  <section id="registerView" class="hidden">
+    <div class="actions" style="margin-bottom:12px"><button class="ghost" id="registerBack">← 返回</button></div>
+    <div class="card">
+      <div class="kicker">Trip Registration</div>
+      <h2 id="regTitle"></h2>
+      <p id="regMeta" class="muted"></p>
+      <p id="regStatus"></p>
+      <div id="activityInfo"></div>
+      <form id="regForm">
+        <label>姓名<input name="name" required></label>
+        <label>出生年月日（西元）<input name="birth" type="date" required></label>
+        <label>身分證字號<input name="idno" maxlength="10" required placeholder="A123456789"></label>
+        <label>本人電話<input name="phone" required inputmode="tel" placeholder="0912345678"></label>
+        <label>性別<select name="gender" required><option value="">請選擇</option><option>男</option><option>女</option><option>其他／不便透露</option></select></label>
+        <label>地址<input name="address" autocomplete="street-address"></label>
+        <label>Email<input type="email" name="email" autocomplete="email"></label>
+        <label>緊急聯絡人姓名<input name="emergency_name" required></label>
+        <label>與本人關係<input name="emergency_relation" placeholder="例如：父親、配偶、朋友"></label>
+        <label>緊急聯絡人電話<input name="emergency_phone" required inputmode="tel"></label>
+        <label>登山經驗<select name="experience"><option>無</option><option>郊山</option><option>中級山</option><option>百岳／3000m 高山</option><option>多日縱走</option></select></label>
+        <label>最近三個月爬過什麼山<textarea name="recent_hikes" rows="4"></textarea></label>
+        <label>3000m 以上高山經驗<select name="high_altitude"><option>無</option><option>1–2 次</option><option>3–5 次</option><option>5 次以上</option></select></label>
+        <label>飲食需求<input name="diet" placeholder="無／素食／其他"></label>
+        <div class="grid"><label>集合方式<select name="transport_type"><option>自行前往</option><option>高鐵</option><option>火車</option><option>指定集合地點</option></select></label><label>上車／集合地點<input name="pickup_place" placeholder="自由填寫"></label></div>
+        <label>備註<textarea name="note" rows="3"></textarea></label>
+        <div class="privacyBox small">🔒 敏感個資將於活動結束 60 天後自動刪除。</div><button class="block">SUBMIT / 確認送出</button>
+      </form>
+      <button id="recoverBtn" class="secondary block">找回 / 修改我的資料</button>
+    </div>
+  </section>
+
+  <section id="recoverView" class="hidden">
+    <div class="actions" style="margin-bottom:12px"><button class="ghost" id="recoverBack">← 返回</button></div>
+    <div class="card"><div class="kicker">Recovery</div><h2>找回我的資料</h2>
+      <form id="recoverForm">
+        <label>姓名<input name="name" required></label>
+        <label>出生年月日<input type="date" name="birth" required></label>
+        <label>本人電話<input name="phone" required></label>
+        <label>身分證末四碼<input name="last4" maxlength="4" required></label>
+        <button class="block">驗證資料</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="editView" class="hidden">
+    <div class="actions" style="margin-bottom:12px"><button class="ghost" id="editBack">← 返回</button></div>
+    <div class="card"><div class="kicker">Member Data</div><h2>查看 / 修改資料</h2><div id="editArea"></div></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const sb=window.supabase.createClient(APP_CONFIG.SUPABASE_URL,APP_CONFIG.SUPABASE_PUBLISHABLE_KEY);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const norm=s=>String(s||'').trim(), phone=s=>String(s||'').replace(/\D/g,'');
+const views=['managerView','manageView','registerView','recoverView','editView'];
+let currentSlug=null,currentPassword=null,currentParticipantToken=null,currentSnapshot=null;
+let createExtraFeeDrafts=[],manageExtraFeeDrafts=[];
+const knownKey='hiking-online-known-events-v17';
+function known(){try{return JSON.parse(localStorage.getItem(knownKey)||'[]')}catch(_){return[]}}
+function remember(slug){const a=known().filter(x=>x!==slug);a.unshift(slug);localStorage.setItem(knownKey,JSON.stringify(a.slice(0,30)))}
+function show(id){views.forEach(v=>$('#'+v)?.classList.toggle('hidden',v!==id));window.scrollTo(0,0)}
+function money(n){return '$'+Number(n||0).toLocaleString()}
+function retentionDate(end){if(!end)return '';const d=new Date(end+'T00:00:00');d.setDate(d.getDate()+60);return d.toISOString().slice(0,10)}
+async function copyText(v,btn){try{await navigator.clipboard.writeText(String(v||''));if(btn){const t=btn.textContent;btn.textContent='✓ 已複製';setTimeout(()=>btn.textContent=t,900)}}catch(_){prompt('請手動複製：',v)}}
+function managerMode(mode){
+ ['homeLauncher','joinHelp','createConfirm','managerTools'].forEach(id=>$('#'+id)?.classList.add('hidden'));
+ if(mode==='home')$('#homeLauncher')?.classList.remove('hidden');
+ if(mode==='join')$('#joinHelp')?.classList.remove('hidden');
+ if(mode==='tools'){$('#managerTools')?.classList.remove('hidden');renderEvents()}
+ if(mode==='create'){$('#managerTools')?.classList.remove('hidden');setTimeout(()=>$('#createAnchor')?.scrollIntoView({behavior:'smooth'}),30)}
+}
+$('#goJoin').onclick=()=>managerMode('join');
+$('#goManage').onclick=()=>{managerMode('tools');setTimeout(()=>$('#eventAnchor')?.scrollIntoView({behavior:'smooth'}),30)};
+$('#goCreate').onclick=()=>{['homeLauncher','joinHelp','managerTools'].forEach(id=>$('#'+id)?.classList.add('hidden'));$('#createConfirm')?.classList.remove('hidden')};
+$('#confirmCreate').onclick=()=>managerMode('create');
+$('#joinDemo').onclick=()=>{const slug=prompt('請輸入活動代碼：');if(slug)openRegister(slug)};
+document.querySelectorAll('.homeReturn').forEach(b=>b.onclick=()=>managerMode('home'));
+
+function feeDraftHtml(f,i,kind){
+ const p=kind==='c'?'cExtra':'mExtra';
+ return `<div data-extra="${i}" class="${kind==='c'?'createExtraFee':'manageExtraFee'}"><div class="feeGrid">
+ <label>費用名稱<input class="${p}Name" value="${esc(f.name||'')}"></label>
+ <label>總額<input type="number" min="0" class="${p}Total" value="${Number(f.total||0)}"></label>
+ <label>分攤人數<input type="number" min="1" class="${p}Split" value="${Math.max(1,Number(f.split||1))}"></label>
+ <label>說明<input class="${p}Note" value="${esc(f.note||'')}"></label></div>
+ <button type="button" class="ghost ${p}Delete" data-i="${i}">刪除這項</button></div>`;
+}
+function readExtra(box,prefix){
+ return $$(`${box} [data-extra]`).map(r=>({name:norm(r.querySelector(`.${prefix}Name`)?.value),total:+(r.querySelector(`.${prefix}Total`)?.value||0),split:Math.max(1,+(r.querySelector(`.${prefix}Split`)?.value||1)),note:norm(r.querySelector(`.${prefix}Note`)?.value)})).filter(x=>x.name||x.total);
+}
+function renderCreateExtraFees(){
+ $('#createExtraFees').innerHTML=createExtraFeeDrafts.map((f,i)=>feeDraftHtml(f,i,'c')).join('');
+ $$('.cExtraDelete').forEach(b=>b.onclick=()=>{createExtraFeeDrafts=readExtra('#createExtraFees','cExtra');createExtraFeeDrafts.splice(+b.dataset.i,1);renderCreateExtraFees()});
+}
+$('#createAddExtraFee').onclick=()=>{createExtraFeeDrafts=readExtra('#createExtraFees','cExtra');createExtraFeeDrafts.push({name:'',total:0,split:+($('#createForm [name="total_people"]')?.value||1),note:''});renderCreateExtraFees()};
+
+function formFees(f,total){
+ const arr=[
+  {name:'住宿',total:+(f.get('lodging_fee')||0),split:+(f.get('lodging_split')||total),note:norm(f.get('lodging_note'))},
+  {name:'接駁',total:+(f.get('transport_fee')||0),split:+(f.get('transport_split')||total),note:norm(f.get('transport_note'))},
+  {name:'餐飲',total:+(f.get('meal_fee')||0),split:+(f.get('meal_split')||total),note:norm(f.get('meal_note'))}
+ ];
+ const on=norm(f.get('other_name')), ot=+(f.get('other_fee')||0);
+ if(on||ot)arr.push({name:on||'其他',total:ot,split:+(f.get('other_split')||total),note:norm(f.get('other_note'))});
+ return arr.concat(readExtra('#createExtraFees','cExtra'));
+}
+
+$('#createForm').addEventListener('submit',async ev=>{
+ ev.preventDefault(); const f=new FormData(ev.target),btn=ev.target.querySelector('button[type="submit"]'),err=$('#createError');
+ if(btn){btn.disabled=true;btn.textContent='建立中…'}; err?.classList.add('hidden');
+ try{
+  const total=Math.max(1,+(f.get('total_people')||1));
+  const payload={name:norm(f.get('name')),start:f.get('start'),end:f.get('end'),cutoff:f.get('cutoff')||null,total_people:total,itinerary:norm(f.get('itinerary')),admin_password:String(f.get('admin_password')||''),fees:formFees(f,total)};
+  const {data,error}=await sb.rpc('v17_create_activity',{p_payload:payload});
+  if(error)throw error;
+  currentSlug=data.slug; remember(currentSlug);
+  alert(`活動已建立\n活動代碼：${currentSlug}\n分享網址：${location.origin+location.pathname+'?event='+currentSlug}`);
+  ev.target.reset();createExtraFeeDrafts=[];renderCreateExtraFees();renderEvents();
+ }catch(e){if(err){err.textContent='⚠ '+e.message;err.classList.remove('hidden')}else alert(e.message)}
+ finally{if(btn){btn.disabled=false;btn.textContent='＋ 建立活動'}}
+});
+
+async function renderEvents(){
+ const list=$('#eventList'); if(!list)return;
+ const slugs=known(); if(!slugs.length){list.innerHTML='<div class="muted">這台裝置目前沒有建立過活動。</div>';return}
+ const cards=[];
+ for(const slug of slugs){
+  const {data}=await sb.rpc('v17_public_activity',{p_slug:slug});
+  if(!data)continue;
+  cards.push(`<div class="event ${data.cancelled?'cancelledEvent':''}">
+   <div class="kicker">Trip Card</div><h3>${esc(data.name)}</h3><div class="muted">${esc(data.start_date)} — ${esc(data.end_date)}</div>
+   <div class="summaryStrip"><div class="summaryBox"><span>活動總人數</span><b>${data.total_people||0}</b></div><div class="summaryBox"><span>已填資料</span><b>${data.participant_count||0}</b></div></div>
+   <div class="meta"><span class="badge ${data.cancelled?'cancelled':''}">${data.cancelled?'⛔ 已取消':(data.registration_open?'OPEN':'CLOSED')}</span><span class="badge">代碼 ${esc(slug)}</span></div>
+   <div class="actions"><button onclick="requestManage('${slug}')">🔒 管理活動</button><button class="secondary" onclick="openRegister('${slug}')">開啟報名頁</button></div></div>`);
+ }
+ list.innerHTML=cards.join('')||'<div class="muted">找不到活動資料。</div>';
+}
+
+window.requestManage=async slug=>{
+ const pw=prompt('請輸入活動管理密碼：'); if(pw===null)return;
+ const {data,error}=await sb.rpc('v17_manager_snapshot',{p_slug:slug,p_password:pw});
+ if(error)return alert(error.message);
+ currentSlug=slug;currentPassword=pw;currentSnapshot=data;renderManage();show('manageView');
+};
+
+function renderManageExtraFees(fees){
+ manageExtraFeeDrafts=(fees||[]).map(x=>({id:x.id,name:x.name,total:x.total_amount,split:x.split_count,note:x.note||''}));
+ $('#manageExtraFees').innerHTML=manageExtraFeeDrafts.map((f,i)=>feeDraftHtml(f,i,'m')).join('');
+ $$('.mExtraDelete').forEach(b=>b.onclick=()=>{manageExtraFeeDrafts=readExtra('#manageExtraFees','mExtra');manageExtraFeeDrafts.splice(+b.dataset.i,1);renderManageExtraFees(manageExtraFeeDrafts.map(x=>({name:x.name,total_amount:x.total,split_count:x.split,note:x.note})))});
+}
+function renderManage(){
+ const s=currentSnapshot,a=s.activity,ps=s.participants||[],fees=s.fees||[];
+ $('#manageTitle').textContent=a.name;$('#mName').value=a.name;$('#mStart').value=a.start_date;$('#mEnd').value=a.end_date;$('#mCutoff').value=a.cutoff_at?String(a.cutoff_at).slice(0,16):'';$('#mTotalPeople').value=a.total_people||1;
+ $('#toggleOpen').textContent=a.cancelled?'活動已取消':(a.registration_open?'手動關閉報名':'重新開放報名');$('#toggleOpen').disabled=!!a.cancelled;
+ $('#toggleCancel').textContent=a.cancelled?'恢復此活動':'⛔ 取消活動';$('#toggleLock').textContent=a.data_locked?'解除修改鎖定':'鎖定隊員修改';
+ const paid=ps.filter(p=>p.payment_status==='已付款').length;
+ $('#manageSummary').innerHTML=`<div class="summaryBox"><span>活動總人數</span><b>${a.total_people||0}</b></div><div class="summaryBox"><span>已填資料</span><b>${ps.length}</b></div><div class="summaryBox"><span>尚未填</span><b>${Math.max(0,(a.total_people||0)-ps.length)}</b></div><div class="summaryBox"><span>已付款</span><b>${paid}</b></div><div class="summaryBox"><span>未付款</span><b>${ps.length-paid}</b></div>`;
+ const by=n=>fees.find(f=>f.name===n)||{total_amount:0,split_count:0};
+ const L=by('住宿'),T=by('接駁'),M=by('餐飲');$('#fLodging').value=L.total_amount||0;$('#sLodging').value=L.split_count||0;$('#fTransport').value=T.total_amount||0;$('#sTransport').value=T.split_count||0;$('#fMeal').value=M.total_amount||0;$('#sMeal').value=M.split_count||0;
+ const others=fees.filter(f=>!['住宿','接駁','餐飲'].includes(f.name)); const O=others.shift()||{name:'',total_amount:0,split_count:0};
+ $('#fOtherName').value=O.name||'';$('#fOther').value=O.total_amount||0;$('#sOther').value=O.split_count||0;renderManageExtraFees(others);
+ const calc=f=>f.split_count>0?Math.round(f.total_amount/f.split_count):0;
+ $('#pLodging').innerHTML=`每人約 <b>${money(calc(L))}</b>`;$('#pTransport').innerHTML=`每人約 <b>${money(calc(T))}</b>`;$('#pMeal').innerHTML=`每人約 <b>${money(calc(M))}</b>`;$('#pOther').innerHTML=`每人約 <b>${money(calc(O))}</b>`;
+ $('#memberRows').innerHTML=ps.length?ps.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.birth_date||'')}</td><td>${esc(p.id_number||'')}</td><td>${esc(p.phone||'')}</td><td>${esc(p.emergency_name||'')}</td><td>${esc(p.emergency_phone||'')}</td><td>${money(p.amount_due||0)}</td><td><span>${esc(p.payment_status||'未付款')}</span><br><button class="ghost" onclick="togglePaid('${p.id}','${p.payment_status==='已付款'?'未付款':'已付款'}')">${p.payment_status==='已付款'?'改未付款':'標記已付款'}</button></td></tr>`).join(''):'<tr><td colspan="8">目前尚無資料</td></tr>';
+ $('#applicationData').innerHTML=ps.length?ps.map((p,i)=>`<div class="personCard"><div class="kicker">${i+1} / ${ps.length}</div><h3>${esc(p.name)}</h3><div>生日：${esc(p.birth_date||'—')}</div><div>身分證：${esc(p.id_number||'—')}</div><div>電話：${esc(p.phone||'—')}</div><div>緊急聯絡人：${esc(p.emergency_name||'—')} ${esc(p.emergency_phone||'')}</div></div>`).join(''):'<div class="muted">目前尚無報名資料。</div>';
+ $('#history').innerHTML=(s.logs||[]).map(l=>`<div class="log"><span class="muted small">${new Date(l.created_at).toLocaleString('zh-TW')}</span><br>${esc(l.detail)}</div>`).join('')||'<div class="muted">尚無修改紀錄</div>';
+}
+async function refreshManage(){const {data,error}=await sb.rpc('v17_manager_snapshot',{p_slug:currentSlug,p_password:currentPassword});if(error)return alert(error.message);currentSnapshot=data;renderManage();renderEvents()}
+window.togglePaid=async(pid,status)=>{const {error}=await sb.rpc('v17_set_payment',{p_slug:currentSlug,p_password:currentPassword,p_participant_id:pid,p_status:status});if(error)alert(error.message);else refreshManage()};
+$('#manageAddExtraFee').onclick=()=>{manageExtraFeeDrafts=readExtra('#manageExtraFees','mExtra');manageExtraFeeDrafts.push({name:'',total:0,split:Math.max(1,+($('#mTotalPeople').value||1)),note:''});renderManageExtraFees(manageExtraFeeDrafts.map(x=>({name:x.name,total_amount:x.total,split_count:x.split,note:x.note})))};
+$('#saveFees').onclick=async()=>{
+ const extras=readExtra('#manageExtraFees','mExtra'),fees=[
+  {name:'住宿',total:+$('#fLodging').value,split:+$('#sLodging').value,note:''},
+  {name:'接駁',total:+$('#fTransport').value,split:+$('#sTransport').value,note:''},
+  {name:'餐飲',total:+$('#fMeal').value,split:+$('#sMeal').value,note:''}
+ ]; if(norm($('#fOtherName').value)||+$('#fOther').value)fees.push({name:norm($('#fOtherName').value)||'其他',total:+$('#fOther').value,split:+$('#sOther').value,note:''});fees.push(...extras);
+ const {error}=await sb.rpc('v17_replace_fees',{p_slug:currentSlug,p_password:currentPassword,p_fees:fees});if(error)alert(error.message);else{alert('費用設定已儲存');refreshManage()}
+};
+$('#saveEvent').onclick=async()=>{
+ const patch={name:norm($('#mName').value),start:$('#mStart').value,end:$('#mEnd').value,cutoff:$('#mCutoff').value||null,total_people:+$('#mTotalPeople').value};
+ const {error}=await sb.rpc('v17_update_activity',{p_slug:currentSlug,p_password:currentPassword,p_patch:patch});if(error)alert(error.message);else{alert('活動設定已儲存');refreshManage()}
+};
+async function action(kind){const {error}=await sb.rpc('v17_activity_action',{p_slug:currentSlug,p_password:currentPassword,p_action:kind});if(error)alert(error.message);else refreshManage()}
+$('#toggleOpen').onclick=()=>action('toggle_open');$('#toggleCancel').onclick=()=>action('toggle_cancel');$('#toggleLock').onclick=()=>action('toggle_lock');
+$('#deleteEventBtn').onclick=async()=>{if(!confirm('確定永久刪除此活動及報名資料？'))return;const typed=prompt('請輸入活動名稱再次確認：');if(typed!==currentSnapshot.activity.name)return alert('活動名稱不一致');const {error}=await sb.rpc('v17_delete_activity',{p_slug:currentSlug,p_password:currentPassword});if(error)return alert(error.message);localStorage.setItem(knownKey,JSON.stringify(known().filter(x=>x!==currentSlug)));alert('活動已刪除');show('managerView');managerMode('tools')};
+
+window.openRegister=async slug=>{
+ const {data,error}=await sb.rpc('v17_public_activity',{p_slug:slug});if(error||!data)return alert(error?.message||'找不到活動');
+ currentSlug=slug;$('#regTitle').textContent=data.name;$('#regMeta').textContent=`${data.start_date} — ${data.end_date}`;$('#regStatus').innerHTML=data.cancelled?'<span class="badge cancelled">⛔ 已取消</span>':`<span class="badge">${data.registration_open?'OPEN':'CLOSED'}</span>`;
+ $('#activityInfo').innerHTML=`<div class="privacyBox"><strong>🔒 個人資料保存說明</strong><br>敏感個資僅供本次活動申請、聯絡及相關作業使用。<br><strong>活動結束 60 天後，系統將自動清除敏感個資。</strong><br>活動結束：${esc(data.end_date)}｜預計清除：${retentionDate(data.end_date)}</div>
+ <div class="notice"><b>活動總人數：${data.total_people||0} 人</b><br>目前已填資料：${data.participant_count||0} 人</div>${data.itinerary?`<div class="card" style="box-shadow:none"><h3>行程內容</h3><div style="white-space:pre-wrap">${esc(data.itinerary)}</div></div>`:''}`;
+ $('#regForm').style.display=(!data.cancelled&&data.registration_open)?'block':'none';show('registerView');history.replaceState({},'',location.pathname+'?event='+slug);
+};
+$('#regForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();const f=new FormData(ev.target);
+ if(!confirm(`請確認資料：\n${f.get('name')}\n${f.get('birth')}\n${f.get('phone')}`))return;
+ const args={p_slug:currentSlug,p_name:norm(f.get('name')),p_gender:f.get('gender'),p_birth_date:f.get('birth'),p_id_number:norm(f.get('idno')).toUpperCase(),p_phone:phone(f.get('phone')),p_address:norm(f.get('address')),p_email:norm(f.get('email')),p_emergency_name:norm(f.get('emergency_name')),p_emergency_relation:norm(f.get('emergency_relation')),p_emergency_phone:phone(f.get('emergency_phone')),p_experience:norm(f.get('experience')),p_recent_hikes:norm(f.get('recent_hikes')),p_high_altitude:norm(f.get('high_altitude')),p_diet:norm(f.get('diet')),p_transport_type:f.get('transport_type'),p_pickup_place:norm(f.get('pickup_place')),p_note:norm(f.get('note'))};
+ const {data,error}=await sb.rpc('register_participant',args);if(error)return alert(error.message);
+ currentParticipantToken=data?.[0]?.edit_token;ev.target.reset();alert('資料已送出');renderEdit();show('editView');
+});
+$('#recoverBtn').onclick=()=>show('recoverView');
+$('#recoverForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();const f=new FormData(ev.target);const {data,error}=await sb.rpc('recover_my_registration',{p_slug:currentSlug,p_name:norm(f.get('name')),p_birth_date:f.get('birth'),p_phone:phone(f.get('phone')),p_id_last4:norm(f.get('last4'))});
+ if(error)return alert(error.message);const r=data?.[0];if(!r?.success)return alert(r?.message||'找不到資料');currentParticipantToken=r.edit_token;renderEdit();show('editView');
+});
+async function renderEdit(){
+ if(!currentParticipantToken)return;
+ const {data,error}=await sb.rpc('get_my_registration',{p_edit_token:currentParticipantToken});if(error||!data?.length)return alert(error?.message||'找不到資料');const p=data[0];
+ const {data:fees}=await sb.rpc('get_my_fees',{p_edit_token:currentParticipantToken});const total=(fees||[]).reduce((s,f)=>s+Number(f.my_amount||0),0);
+ $('#editArea').innerHTML=`<div class="notice"><b>我的活動費用</b><br>${(fees||[]).map(f=>`${esc(f.fee_name)}：${f.included?money(f.my_amount):'不計費'}`).join('<br>')}<br><b>應付：${money(total)}</b><br>付款狀態：${esc(p.payment_status||'未付款')}</div>
+ <div class="notice small">個人修改連結：<button type="button" class="ghost" id="copyEditLink">複製連結</button></div>
+ <form id="onlineEditForm"><label>姓名<input name="name" value="${esc(p.name)}" required></label><label>出生年月日<input type="date" name="birth" value="${esc(p.birth_date)}" required></label><label>身分證字號<input name="idno" value="${esc(p.id_number)}" required></label><label>本人電話<input name="phone" value="${esc(p.phone)}" required></label><label>緊急聯絡人<input name="emergency_name" value="${esc(p.emergency_name)}" required></label><label>緊急聯絡電話<input name="emergency_phone" value="${esc(p.emergency_phone)}" required></label><button class="block">儲存修改</button></form>`;
+ $('#copyEditLink').onclick=()=>copyText(location.origin+location.pathname+'?edit='+currentParticipantToken,$('#copyEditLink'));
+ $('#onlineEditForm').onsubmit=async ev=>{ev.preventDefault();const f=new FormData(ev.target);const {error}=await sb.rpc('update_my_registration',{p_edit_token:currentParticipantToken,p_name:norm(f.get('name')),p_gender:p.gender||'',p_birth_date:f.get('birth'),p_id_number:norm(f.get('idno')).toUpperCase(),p_phone:phone(f.get('phone')),p_address:p.address||'',p_email:p.email||'',p_emergency_name:norm(f.get('emergency_name')),p_emergency_relation:p.emergency_relation||'',p_emergency_phone:phone(f.get('emergency_phone')),p_experience:p.experience||'',p_recent_hikes:p.recent_hikes||'',p_high_altitude:p.high_altitude||'',p_diet:p.diet||'',p_transport_type:p.transport_type||'',p_pickup_place:p.pickup_place||'',p_note:p.note||''});if(error)alert(error.message);else alert('已更新')};
+ history.replaceState({},'',location.pathname+'?edit='+currentParticipantToken);
+}
+$('#backBtn').onclick=()=>{show('managerView');managerMode('tools')};$('#registerBack').onclick=()=>{show('managerView');managerMode('home')};$('#recoverBack').onclick=()=>show('registerView');$('#editBack').onclick=()=>openRegister(currentSlug);
+$('#exportBtn').onclick=()=>alert('CSV 匯出下一版接上；目前資料已在線上資料庫。');
+$('#addLeader').onclick=()=>alert('領隊名單先保留原介面，線上版暫不需要額外設定。');
+$('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上。');
+
+(async()=>{
+ const q=new URLSearchParams(location.search);
+ if(q.get('edit')){currentParticipantToken=q.get('edit');await renderEdit();show('editView')}
+ else if(q.get('event'))await openRegister(q.get('event'));
+ else {show('managerView');managerMode('home');renderEvents()}
+})();
+})();
+</script>
+</body>
+</html>
