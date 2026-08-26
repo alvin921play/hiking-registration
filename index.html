@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -91,6 +92,45 @@ button{background:var(--accent);color:#fff;font-weight:800;cursor:pointer;margin
 <div id="regResult"></div>
 </div>
 </section>
+
+<section id="edit" class="hidden">
+  <button class="secondary" id="editBack">← 回活動</button>
+  <div class="card">
+    <h2>查看 / 修改我的資料</h2>
+    <div id="editStatus"></div>
+    <form id="editForm" class="hidden">
+      <label>姓名<input name="name" required></label>
+      <div class="grid">
+        <label>出生年月日<input type="date" name="birth" required></label>
+        <label>性別<select name="gender"><option>男</option><option>女</option><option>其他／不便透露</option></select></label>
+      </div>
+      <label>身分證字號<input name="idno" maxlength="10" required></label>
+      <label>本人電話<input name="phone" required></label>
+      <label>地址<input name="address"></label>
+      <label>Email<input type="email" name="email"></label>
+      <div class="grid">
+        <label>緊急聯絡人<input name="emergency_name" required></label>
+        <label>關係<input name="emergency_relation"></label>
+      </div>
+      <label>緊急聯絡人電話<input name="emergency_phone" required></label>
+      <label>登山經驗<input name="experience"></label>
+      <label>最近三個月登山<textarea name="recent_hikes"></textarea></label>
+      <label>3000m 以上經驗<input name="high_altitude"></label>
+      <label>飲食需求<input name="diet"></label>
+      <div class="grid">
+        <label>集合方式<select name="transport_type"><option>自行前往</option><option>高鐵</option><option>火車</option><option>指定集合地點</option></select></label>
+        <label>集合地點<input name="pickup_place"></label>
+      </div>
+      <label>備註<textarea name="note"></textarea></label>
+      <button>儲存修改</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>我的活動費用</h2>
+    <div id="myFees"></div>
+  </div>
+</section>
+
 </main>
 <script src="./config.js"></script>
 <script>
@@ -105,8 +145,11 @@ function init(){
    return false;
  }
  sb=supabase.createClient(APP_CONFIG.SUPABASE_URL,APP_CONFIG.SUPABASE_PUBLISHABLE_KEY);
- const slug=new URLSearchParams(location.search).get('event');
- if(slug) loadEvent(slug);
+ const qs=new URLSearchParams(location.search);
+ const editToken=qs.get('edit');
+ const slug=qs.get('event');
+ if(editToken) loadEdit(editToken);
+ else if(slug) loadEvent(slug);
  return true;
 }
 $('#createForm').addEventListener('submit',async e=>{
@@ -125,7 +168,7 @@ $('#createForm').addEventListener('submit',async e=>{
  $('#copyUrl').onclick=async()=>{await navigator.clipboard.writeText(url);$('#copyUrl').textContent='已複製'};
 });
 $('#openForm').addEventListener('submit',e=>{e.preventDefault();loadEvent(new FormData(e.target).get('slug'))});
-$('#back').onclick=()=>{history.pushState({},'',location.pathname);$('#event').classList.add('hidden');$('#home').classList.remove('hidden')};
+$('#back').onclick=()=>{history.pushState({},'',location.pathname);showOnly('home')};
 
 async function loadEvent(slug){
  if(!sb && !init())return;
@@ -137,7 +180,7 @@ async function loadEvent(slug){
  $('#eventItinerary').textContent=a.itinerary||'尚未填寫行程內容';
  $('#eventState').innerHTML=a.cancelled?'<div class="notice error">⛔ 本活動已取消</div>':(a.registration_open?'<div class="notice ok">目前開放報名</div>':'<div class="notice">目前未開放報名</div>');
  $('#regForm').style.display=(!a.cancelled&&a.registration_open)?'block':'none';
- $('#home').classList.add('hidden');$('#event').classList.remove('hidden');
+ showOnly('event');
  history.replaceState({},'',location.pathname+'?event='+encodeURIComponent(a.slug));
 }
 
@@ -155,9 +198,85 @@ $('#regForm').addEventListener('submit',async e=>{
  const {data,error}=await sb.rpc('register_participant',args);
  if(error)return msg($('#regResult'),'報名失敗：'+error.message);
  const token=data?.[0]?.edit_token||'';
- msg($('#regResult'),`報名成功。<br>個人修改 Token：<span class="code">${token}</span><br><b>先把這串留著，下一版會接個人修改頁。</b>`,true);
+ const editUrl=location.origin+location.pathname+'?edit='+encodeURIComponent(token);
+ msg($('#regResult'),`報名成功。<br>個人修改連結：<span class="code">${editUrl}</span><br><button type="button" id="copyEditUrl">複製修改連結</button><button type="button" class="secondary" id="openEditNow">立即查看 / 修改</button>`,true);
+ $('#copyEditUrl').onclick=async()=>{await navigator.clipboard.writeText(editUrl);$('#copyEditUrl').textContent='已複製'};
+ $('#openEditNow').onclick=()=>loadEdit(token);
  e.target.reset();
 });
+
+let currentEditToken=null,currentEditActivitySlug=null;
+
+function showOnly(id){
+ ['home','event','edit'].forEach(v=>$('#'+v).classList.toggle('hidden',v!==id));
+ window.scrollTo(0,0);
+}
+
+async function loadEdit(token){
+ if(!sb && !init())return;
+ currentEditToken=String(token||'').trim();
+ const {data,error}=await sb.rpc('get_my_registration',{p_edit_token:currentEditToken});
+ showOnly('edit');
+ if(error || !data?.length){
+   $('#editStatus').innerHTML='<div class="notice error">找不到這筆報名資料，修改連結可能已失效。</div>';
+   $('#editForm').classList.add('hidden');
+   $('#myFees').innerHTML='';
+   return;
+ }
+ const p=data[0];
+ currentEditActivitySlug=p.activity_slug;
+
+ if(p.sensitive_purged){
+   $('#editStatus').innerHTML='<div class="notice error">本活動敏感個資保存期限已結束，資料已清除，無法再修改。</div>';
+   $('#editForm').classList.add('hidden');
+ }else if(p.data_locked){
+   $('#editStatus').innerHTML='<div class="notice">🔒 本活動目前已鎖定資料修改。</div>';
+   $('#editForm').classList.add('hidden');
+ }else{
+   $('#editStatus').innerHTML=`<div class="notice ok">活動：<b>${p.activity_name}</b><br>付款狀態：${p.payment_status||'未付款'}</div>`;
+   const form=$('#editForm'); form.classList.remove('hidden');
+   const set=(n,v)=>{const el=form.elements[n];if(el)el.value=v??''};
+   set('name',p.name);set('birth',p.birth_date);set('gender',p.gender);
+   set('idno',p.id_number);set('phone',p.phone);set('address',p.address);set('email',p.email);
+   set('emergency_name',p.emergency_name);set('emergency_relation',p.emergency_relation);set('emergency_phone',p.emergency_phone);
+   set('experience',p.experience);set('recent_hikes',p.recent_hikes);set('high_altitude',p.high_altitude);
+   set('diet',p.diet);set('transport_type',p.transport_type);set('pickup_place',p.pickup_place);set('note',p.note);
+ }
+
+ const {data:fees,error:feeError}=await sb.rpc('get_my_fees',{p_edit_token:currentEditToken});
+ if(feeError){
+   $('#myFees').innerHTML='<div class="notice error">費用讀取失敗：'+feeError.message+'</div>';
+ }else if(!fees?.length){
+   $('#myFees').innerHTML='<div class="notice">目前沒有費用資料。</div>';
+ }else{
+   const total=fees.reduce((s,f)=>s+Number(f.my_amount||0),0);
+   $('#myFees').innerHTML=fees.map(f=>`<div class="notice">${f.fee_name}：${f.included?'$'+Number(f.my_amount||0).toLocaleString():'不參與'}</div>`).join('')+
+   `<div class="notice ok"><b>應付總額：$${total.toLocaleString()}</b></div>`;
+ }
+ history.replaceState({},'',location.pathname+'?edit='+encodeURIComponent(currentEditToken));
+}
+
+$('#editForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const f=new FormData(e.target);
+ const {error}=await sb.rpc('update_my_registration',{
+   p_edit_token:currentEditToken,
+   p_name:f.get('name'),p_gender:f.get('gender'),p_birth_date:f.get('birth'),
+   p_id_number:f.get('idno'),p_phone:f.get('phone'),p_address:f.get('address'),p_email:f.get('email'),
+   p_emergency_name:f.get('emergency_name'),p_emergency_relation:f.get('emergency_relation'),p_emergency_phone:f.get('emergency_phone'),
+   p_experience:f.get('experience'),p_recent_hikes:f.get('recent_hikes'),p_high_altitude:f.get('high_altitude'),
+   p_diet:f.get('diet'),p_transport_type:f.get('transport_type'),p_pickup_place:f.get('pickup_place'),p_note:f.get('note')
+ });
+ if(error)return msg($('#editStatus'),'修改失敗：'+error.message);
+ msg($('#editStatus'),'資料已更新。',true);
+ await loadEdit(currentEditToken);
+});
+
+$('#editBack').onclick=()=>{
+ if(currentEditActivitySlug) loadEvent(currentEditActivitySlug);
+ else {history.pushState({},'',location.pathname);showOnly('home')}
+};
+
 init();
 </script>
 </body></html>
