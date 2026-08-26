@@ -1030,7 +1030,7 @@ async function renderJoinActivities(){
      <b>查看活動／報名 →</b>
    </article>`).join(''):'<div class="homeEmpty">目前沒有可報名的活動。</div>';
  list.querySelectorAll('.joinTripChoice').forEach(c=>{
-   const go=()=>openRegister(c.dataset.slug);
+   const go=()=>{if(typeof window.openRegister!=='function')return alert('活動頁尚未載入完成，請重新整理後再試。');window.openRegister(c.dataset.slug)};
    c.onclick=go;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}
  });
 }
@@ -1051,7 +1051,7 @@ async function renderPublicHome(){
    <div>${esc(a.start_date)} — ${esc(a.end_date)}</div>
    <div class="homeTripMeta">${a.cancelled?'<span class="badge cancelled">⛔ 已取消</span>':''}<span class="chip homeTripCount">👥 目前 ${a.participant_count||0} 人</span>${(a.mountain_name||a.mountain_area)?`<span class="chip">${esc(a.mountain_name||a.mountain_area)}</span>`:''}</div>
    <b>${a.cancelled?'查看活動':'查看活動／報名'} →</b></div></article>`).join(''):'<div class="homeEmpty">目前沒有公開的近期活動。</div>';
- box.querySelectorAll('.homeTripCard').forEach(c=>{const go=()=>openRegister(c.dataset.slug);c.onclick=go;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}});
+ box.querySelectorAll('.homeTripCard').forEach(c=>{const go=()=>{if(typeof window.openRegister!=='function')return alert('活動頁尚未載入完成，請重新整理後再試。');window.openRegister(c.dataset.slug)};c.onclick=go;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}});
  if(window.renderPublicArticles)window.renderPublicArticles();
 }
 
