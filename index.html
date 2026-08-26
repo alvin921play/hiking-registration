@@ -640,6 +640,18 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 </div></div>
 <div class="hidden" id="createConfirm"><div class="card createConfirm"><button class="ghost homeReturn" onclick="location.assign(location.pathname)" type="button">← 返回</button><div class="kicker">建立前確認</div><h2>建立新的登山活動？</h2><p>這個功能給本次活動的建立者／領隊使用。</p><div class="warning">如果你只是要填寫別人的活動，請使用領隊提供的活動連結，不需要建立新活動。</div><div class="actions"><button id="confirmCreate" type="button">我是領隊，繼續建立</button><button class="secondary homeReturn" onclick="location.assign(location.pathname)" type="button">返回</button></div></div></div>
 <div class="hidden" id="managerTools"><button class="ghost homeReturn" onclick="location.assign(location.pathname)" style="margin-bottom:12px" type="button">← 返回首頁</button>
+<div class="card" id="eventManageLookupCard">
+<div class="kicker">我的活動</div>
+<div id="eventAnchor"></div>
+<h2>🔒 管理活動</h2>
+<p class="muted small">選擇這台裝置建立過的活動，或直接輸入活動代碼。</p>
+<div class="grid">
+<label>活動代碼<input id="directManageSlug" placeholder="例如：7B011CC0" autocomplete="off"/></label>
+<div style="align-self:end"><button type="button" id="directManageBtn">輸入密碼並管理</button></div>
+</div>
+<div id="eventList" style="margin-top:14px"></div>
+</div>
+
 <div class="card">
 <div class="kicker">建立新活動</div>
 <div id="createAnchor"></div><h2>建立活動</h2><p class="muted small">手機可直接一路往下填；照片、費用與行程都可以之後再修改。</p>
@@ -722,7 +734,7 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 </div>
 <div class="kicker">我的登山活動</div>
 <h2>我的活動</h2>
-<div id="eventAnchor"></div><div id="eventList"></div>
+<div data-old-id="eventAnchor"></div><div data-old-id="eventList"></div>
 </div>
 </section>
 <section class="hidden" id="manageView">
@@ -1138,10 +1150,10 @@ function renderChecklist(slug,required=[]){
  let saved={};try{saved=JSON.parse(localStorage.getItem(checklistKey(slug))||'{}')}catch(_){}
  const basic=['登山背包','登山鞋／越野鞋','頭燈','雨具／防水外層','飲水','行動糧','離線地圖','行動電源','個人藥品','垃圾袋'].filter(g=>!required.includes(g));
  const reqHtml=required.length?`<div class="card"><div class="kicker">領隊要求</div><h2>🧑‍🏫 領隊要求裝備（必備）</h2><p class="muted">以下為本次活動必要裝備，請逐項確認已準備；未全部確認無法完成報名。</p><div id="leaderRequiredGear">${required.map(g=>`<label class="checkItem ${saved[g]?'done':''}"><input type="checkbox" data-required="1" data-g="${esc(g)}" ${saved[g]?'checked':''}><span>⚠️ ${esc(g)}</span></label>`).join('')}</div></div>`:'';
- box.innerHTML=reqHtml+`<div class="card"><div class="kicker">我的裝備清單</div><h2>🎒 我的裝備自檢</h2><p class="muted">基本裝備與個人物品自我檢查，不作為報名強制條件。</p><div id="checkItems">${basic.map(g=>`<label class="checkItem ${saved[g]?'done':''}"><input type="checkbox" data-g="${esc(g)}" ${saved[g]?'checked':''}><span>${esc(g)}</span></label>`).join('')}</div><div class="grid"><label>新增自己的裝備<input id="myGearAdd" placeholder="例如：咖啡、拖鞋"></label><div style="align-self:end"><button type="button" class="secondary" id="myGearAddBtn">＋ 新增</button></div></div></div>`;
+ box.innerHTML=reqHtml+`<div class="card"><div class="kicker">我的裝備清單</div><h2>🎒 我的裝備自檢</h2><p class="muted">基本裝備與個人物品自我檢查，不作為報名強制條件。</p><div id="checkItems">${basic.map(g=>`<label class="checkItem ${saved[g]?'done':''}"><input type="checkbox" data-g="${esc(g)}" ${saved[g]?'checked':''}><span>${esc(g)}</span></label>`).join('')}</div></div>`;
  const save=()=>{const o={};$$('#personalChecklist input[data-g]').forEach(x=>o[x.dataset.g]=x.checked);localStorage.setItem(checklistKey(slug),JSON.stringify(o));$$('#personalChecklist .checkItem').forEach(l=>l.classList.toggle('done',l.querySelector('input').checked))};
  $$('#personalChecklist input[data-g]').forEach(x=>x.onchange=save);
- $('#myGearAddBtn').onclick=()=>{const g=norm($('#myGearAdd').value);if(!g)return;const d=document.createElement('label');d.className='checkItem';d.innerHTML=`<input type="checkbox" data-g="${esc(g)}"><span>${esc(g)}</span>`;$('#checkItems').appendChild(d);d.querySelector('input').onchange=save;$('#myGearAdd').value='';save()};
+
 }
 
 let createExtraFeeDrafts=[],manageExtraFeeDrafts=[];
@@ -1186,6 +1198,14 @@ function managerMode(mode){
  if(mode==='tools'){$('#managerTools')?.classList.remove('hidden');renderEvents()}
  if(mode==='create'){$('#managerTools')?.classList.remove('hidden');setTimeout(()=>$('#createAnchor')?.scrollIntoView({behavior:'smooth'}),30)}
 }
+
+const directManageBtn=$('#directManageBtn');
+if(directManageBtn)directManageBtn.onclick=()=>{
+ const slug=norm($('#directManageSlug')?.value).toUpperCase();
+ if(!slug)return alert('請輸入活動代碼');
+ requestManage(slug);
+};
+
 $('#goJoin').onclick=()=>{managerMode('join');renderJoinActivities()};
 $('#goManage').onclick=()=>{managerMode('tools');setTimeout(()=>$('#eventAnchor')?.scrollIntoView({behavior:'smooth'}),30)};
 $('#goCreate').onclick=()=>{['homeLauncher','joinHelp','managerTools'].forEach(id=>$('#'+id)?.classList.add('hidden'));$('#createConfirm')?.classList.remove('hidden')};
@@ -1263,7 +1283,7 @@ $('#createForm').addEventListener('submit',async ev=>{
 
 async function renderEvents(){
  const list=$('#eventList'); if(!list)return;
- const slugs=known(); if(!slugs.length){list.innerHTML='<div class="muted">這台裝置目前沒有建立過活動。</div>';return}
+ const slugs=known(); if(!slugs.length){list.innerHTML='<div class="muted">這台裝置沒有保存活動紀錄；可在上方直接輸入活動代碼管理。</div>';return}
  const cards=[];
  for(const slug of slugs){
   const {data}=await sb.rpc('v17_public_activity',{p_slug:slug});
@@ -1278,11 +1298,22 @@ async function renderEvents(){
 }
 
 window.requestManage=async slug=>{
- if(!sb)return alert('目前是本機預覽；活動管理請使用已部署的網站。');
- const pw=prompt('請輸入活動管理密碼：'); if(pw===null)return;
- const {data,error}=await sb.rpc('v17_manager_snapshot',{p_slug:slug,p_password:pw});
- if(error)return alert(error.message);
- currentSlug=slug;currentPassword=pw;currentSnapshot=data;renderManage();show('manageView');
+ try{
+  if(!sb)return alert('目前無法連線 Supabase，請重新整理後再試。');
+  slug=norm(slug).toUpperCase();
+  if(!slug)return alert('找不到活動代碼');
+  const pw=prompt('請輸入活動管理密碼：'); if(pw===null)return;
+  const cleanPw=String(pw).trim();
+  if(!cleanPw)return alert('請輸入活動管理密碼');
+  const {data,error}=await sb.rpc('v17_manager_snapshot',{p_slug:slug,p_password:cleanPw});
+  if(error)return alert(error.message);
+  if(!data||!data.activity)return alert('活動管理資料讀取失敗');
+  currentSlug=slug;currentPassword=cleanPw;currentSnapshot=data;
+  renderManage();show('manageView');
+ }catch(e){
+  console.error('開啟活動管理失敗',e);
+  alert('開啟活動管理失敗：'+(e?.message||e));
+ }
 };
 
 function renderManageExtraFees(fees){
