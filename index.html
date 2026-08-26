@@ -1016,7 +1016,7 @@ async function renderJoinActivities(){
  const list=$('#joinActivityList'); if(!list)return;
  if(!sb){list.innerHTML='<div class="homeEmpty">目前無法讀取線上活動。</div>';return}
  list.innerHTML='<div class="muted">讀取活動中…</div>';
- const {data,error}=await sb.rpc('v18_home_feed');
+ const {data,error}=await sb.rpc('v23_home_feed');
  if(error){list.innerHTML=`<div class="homeEmpty">活動讀取失敗：${esc(error.message)}</div>`;return}
  const trips=(data?.activities||[]).filter(a=>!a.cancelled);
  list.innerHTML=trips.length?trips.map(a=>`
@@ -1042,7 +1042,7 @@ async function renderPublicHome(){
   if(articles)articles.innerHTML='<div class="muted">線上文章會在網站部署並連上 Supabase 後顯示。</div>';
   return;
  }
- const {data,error}=await sb.rpc('v18_home_feed');
+ const {data,error}=await sb.rpc('v23_home_feed');
  if(error){box.innerHTML=`<div class="homeEmpty">首頁活動讀取失敗：${esc(error.message)}<br><span class="small">請先執行 v18.2 SQL。</span></div>`;return}
  const trips=data?.activities||[];
  box.innerHTML=trips.length?trips.map(a=>`<article class="homeTripCard ${a.cancelled?'cancelledEvent':''}" tabindex="0" role="link" data-slug="${esc(a.slug)}">
