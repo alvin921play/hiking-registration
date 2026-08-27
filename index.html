@@ -461,28 +461,17 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 @media(max-width:650px){.v22ArticleImages{grid-template-columns:1fr}.v22ArticlePage{width:min(100% - 16px,860px)}}
 
 
-#eventCards{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px!important}
-#eventCards .eventCard{padding:12px!important;margin:0!important;min-height:0!important}
-#eventCards .eventCard .eventCover,
-#eventCards .eventCard .cover,
-#eventCards .eventCard img{max-height:135px!important;object-fit:cover!important}
-#eventCards .eventCard h3{font-size:18px!important;margin:8px 0 5px!important}
-#eventCards .eventCard p{margin:5px 0!important}
-#eventCards .eventCard button{padding:8px 10px!important}
-@media(max-width:820px){#eventCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-@media(max-width:520px){#eventCards{grid-template-columns:1fr!important}#eventCards .eventCard{padding:10px!important}#eventCards .eventCard .eventCover,#eventCards .eventCard .cover,#eventCards .eventCard img{max-height:105px!important}}
-
-.homeTripGrid,#homeActivities{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px!important}
-.homeTripCard{display:grid!important;grid-template-columns:110px minmax(0,1fr)!important;min-height:0!important;border-radius:14px!important;overflow:hidden!important}
-.homeTripCover{min-height:118px!important;height:100%!important}
-.homeTripCover img{width:100%!important;height:100%!important;max-height:145px!important;object-fit:cover!important}
-.homeTripFallback{height:100%!important;min-height:118px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:8px!important}
-.homeTripBody{padding:11px!important}
-.homeTripBody h3{font-size:17px!important;margin:4px 0 5px!important;line-height:1.25!important}
-.homeTripMeta{gap:5px!important;margin:7px 0!important}
-.homeTripMeta .chip,.homeTripMeta .badge{padding:4px 7px!important;font-size:11px!important}
-@media(max-width:900px){.homeTripGrid,#homeActivities{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-@media(max-width:580px){.homeTripGrid,#homeActivities{grid-template-columns:1fr!important}.homeTripCard{grid-template-columns:92px minmax(0,1fr)!important}.homeTripCover,.homeTripFallback{min-height:102px!important}.homeTripCover img{max-height:120px!important}}
+/* v33 phase1: only affects homepage recent activities */
+#homeActivities{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+#homeActivities .homeTripCard:nth-child(n+3){display:none!important}
+#homeActivities .homeTripCover{aspect-ratio:16/9!important}
+#homeActivities .homeTripBody{padding:12px!important}
+#homeActivities .homeTripBody h3{margin:4px 0 6px!important;font-size:18px!important}
+@media(max-width:640px){#homeActivities{grid-template-columns:1fr}}
 </style>
 <style>
 .prepGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
@@ -512,8 +501,8 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 <section id="managerView">
 <div id="homeLauncher">
 <div class="launchGrid">
-<div class="launchCard primary"><div class="launchIcon">🏕</div><div class="kicker">活動報名</div><h2>我要報名</h2><p class="muted">直接選擇想參加的活動，查看行程資訊並完成報名。</p><button id="goJoin" type="button">選擇活動</button></div>
-<div class="launchCard"><div class="launchIcon">🔒</div><div class="kicker">領隊</div><h2>活動管理</h2><p class="muted">查看既有活動，輸入該活動自己的管理密碼。</p><button class="secondary" id="goManage" type="button">查看活動</button></div>
+<div class="launchCard primary"><div class="launchIcon">🏕</div><div class="kicker">活動報名</div><h2>我要報名</h2><p class="muted">直接選擇想參加的活動，查看行程資訊並完成報名。</p><button id="goJoin" onclick="location.href='activities.html?mode=join'" type="button">選擇活動</button></div>
+<div class="launchCard"><div class="launchIcon">🔒</div><div class="kicker">領隊</div><h2>活動管理</h2><p class="muted">查看既有活動，輸入該活動自己的管理密碼。</p><button class="secondary" id="goManage" onclick="location.href='activities.html?mode=manage'" type="button">查看活動</button></div>
 <div class="launchCard"><div class="launchIcon">＋</div><div class="kicker">新增活動</div><h2>建立新活動</h2><p class="muted">只有這次活動的建立者／領隊才需要按這裡。</p><button class="ghost" id="goCreate" type="button">建立新活動</button></div>
 </div>
 <section class="v194Home" id="publicHomeContent">
@@ -526,7 +515,7 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 </div>
 <div class="v194Grid">
 <article class="v194Card">
-<div class="v194Head"><div><div class="kicker">近期活動</div><h2>🏔️ 近期活動</h2></div><span>點卡片查看</span></div>
+<div class="v194Head"><div><div class="kicker">近期活動</div><h2>🏔️ 近期活動</h2></div><a class="ghost v195MiniBtn" href="activities.html">查看全部活動 →</a></div>
 <div id="homeActivities"><div class="homeEmpty">讀取活動中…</div></div>
 </article>
 <article class="v194Card">
@@ -558,7 +547,7 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 <div class="v194Head"><div><div class="kicker">快速功能</div><h2>🧭 快速功能</h2></div></div>
 <div class="v194QuickGrid">
 <button class="v194Quick" id="v194Create" onclick="document.getElementById('goCreate')?.click()" type="button"><b>＋ 建立活動</b><span>新增一場登山活動</span></button>
-<button class="v194Quick" id="v194Manage" onclick="document.getElementById('homeActivities')?.scrollIntoView({behavior:'smooth',block:'center'});alert('請從近期活動點選要管理的活動。活動代碼已改為系統內部使用。')" type="button"><b>🔒 活動管理</b><span>名單、費用與活動設定</span></button>
+<button class="v194Quick" id="v194Manage" onclick="location.href='activities.html?mode=manage'" type="button"><b>🔒 活動管理</b><span>名單、費用與活動設定</span></button>
 <button class="v194Quick" id="v194GearJump" onclick="document.getElementById('homeChecklistType')?.scrollIntoView({behavior:'smooth',block:'center'})" type="button"><b>🎒 裝備檢查</b><span>快速跳到自檢工具</span></button>
 <button class="v194Quick" id="v194ClimateJump" onclick="document.getElementById('homeMountainArea')?.scrollIntoView({behavior:'smooth',block:'center'})" type="button"><b>🌡️ 氣候參考</b><span>查看月份溫度</span></button>
 </div>
@@ -663,13 +652,7 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 </div></div>
 <div class="hidden" id="createConfirm"><div class="card createConfirm"><button class="ghost homeReturn" onclick="location.assign(location.pathname)" type="button">← 返回</button><div class="kicker">建立前確認</div><h2>建立新的登山活動？</h2><p>這個功能給本次活動的建立者／領隊使用。</p><div class="warning">如果你只是要填寫別人的活動，請使用領隊提供的活動連結，不需要建立新活動。</div><div class="actions"><button id="confirmCreate" type="button">我是領隊，繼續建立</button><button class="secondary homeReturn" onclick="location.assign(location.pathname)" type="button">返回</button></div></div></div>
 <div class="hidden" id="managerTools"><button class="ghost homeReturn" onclick="location.assign(location.pathname)" style="margin-bottom:12px" type="button">← 返回首頁</button>
-<div class="card" id="eventManageLookupCard">
-<div class="kicker">我的活動</div>
-<div id="eventAnchor"></div>
-<h2>🔒 我的活動</h2>
-<p class="muted small">這裡會顯示由這台裝置建立過的活動。選擇活動後，只需要輸入建立時設定的管理密碼。</p>
-<div id="eventList" style="margin-top:14px"></div>
-</div><div class="card">
+<div class="card">
 <div class="kicker">建立新活動</div>
 <div id="createAnchor"></div><h2>建立活動</h2><p class="muted small">手機可直接一路往下填；照片、費用與行程都可以之後再修改。</p>
 <form id="createForm">
@@ -869,7 +852,7 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 <div id="departurePrepPublic"></div>
 <div class="requiredGearBox hidden" id="requiredGearConfirm">
 <h3>🧑‍🏫 領隊要求裝備（必備）</h3>
-<div class="muted">以下為本次活動必要裝備，報名前請逐項確認已準備。</div>
+<div class="muted">以下為主揪指定的本次活動必備裝備，請逐項確認後再完成報名。</div>
 </div>
 <div id="publicArticles"></div>
 <div id="personalChecklist"></div>
@@ -900,9 +883,8 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 <div class="card"><div class="kicker">找回報名</div><h2>找回我的資料</h2>
 <form id="recoverForm">
 <label>姓名<input name="name" required=""/></label>
-<label>出生年月日<input name="birth" required="" type="date"/></label>
-<label>本人電話<input name="phone" required=""/></label>
-<label>身分證末四碼<input maxlength="4" name="last4" required=""/></label>
+<label>本人電話<input inputmode="tel" name="phone" placeholder="0912345678" required=""/></label>
+<label>Email（必要時協助確認）<input autocomplete="email" name="email" placeholder="選填" type="email"/></label>
 <button class="block">驗證資料</button>
 </form>
 </div>
@@ -1071,7 +1053,7 @@ document.addEventListener('click',function(e){
   if(!card)return;
   e.preventDefault();
   const slug=card.dataset.slug;
-  if(slug&&typeof window.openRegister==='function')window.openRegister(slug);
+  if(slug)location.href='activities.html?event='+encodeURIComponent(slug);
 });
 document.addEventListener('keydown',function(e){
   if(e.key!=='Enter'&&e.key!==' ')return;
@@ -1079,7 +1061,7 @@ document.addEventListener('keydown',function(e){
   if(!card)return;
   e.preventDefault();
   const slug=card.dataset.slug;
-  if(slug&&typeof window.openRegister==='function')window.openRegister(slug);
+  if(slug)location.href='activities.html?event='+encodeURIComponent(slug);
 });
 
 async function renderPublicHome(){
@@ -1091,7 +1073,7 @@ async function renderPublicHome(){
  }
  const {data,error}=await sb.rpc('v23_home_feed');
  if(error){box.innerHTML=`<div class="homeEmpty">首頁活動讀取失敗：${esc(error.message)}<br><span class="small">請先執行 v18.2 SQL。</span></div>`;return}
- const trips=data?.activities||[];
+ const trips=(data?.activities||[]).slice(0,2);
  box.innerHTML=trips.length?trips.map(a=>`<article class="homeTripCard ${a.cancelled?'cancelledEvent':''}" tabindex="0" role="link" data-slug="${esc(a.slug)}">
    <div class="homeTripCover">${a.cover_image?`<img src="${esc(a.cover_image)}" alt="${esc(a.name)} 封面">`:`<div class="homeTripFallback">▲ ${esc(a.mountain_name||a.mountain_area||'TRIP')}</div>`}</div>
    <div class="homeTripBody"><div class="kicker">Upcoming Trip</div><h3>${esc(a.name)}</h3>
@@ -1295,7 +1277,7 @@ $('#createForm').addEventListener('submit',async ev=>{
 
 async function renderEvents(){
  const list=$('#eventList'); if(!list)return;
- const slugs=known(); if(!slugs.length){list.innerHTML='<div class="muted">這台裝置目前沒有保存已建立活動。</div>';return}
+ const slugs=known(); if(!slugs.length){list.innerHTML='<div class="muted">這台裝置沒有保存活動紀錄；可在上方直接輸入活動代碼管理。</div>';return}
  const cards=[];
  for(const slug of slugs){
   const {data}=await sb.rpc('v17_public_activity',{p_slug:slug});
@@ -1303,7 +1285,7 @@ async function renderEvents(){
   cards.push(`<div class="event ${data.cancelled?'cancelledEvent':''}">
    <div class="kicker">Trip Card</div><h3>${esc(data.name)}</h3><div class="muted">${esc(data.start_date)} — ${esc(data.end_date)}</div>
    <div class="summaryStrip"><div class="summaryBox"><span>活動總人數</span><b>${data.total_people||0}</b></div><div class="summaryBox"><span>已填資料</span><b>${data.participant_count||0}</b></div></div>
-   <div class="meta"><span class="badge ${data.cancelled?'cancelled':''}">${data.cancelled?'⛔ 已取消':(data.registration_open?'OPEN':'CLOSED')}</span></div>
+   <div class="meta"><span class="badge ${data.cancelled?'cancelled':''}">${data.cancelled?'⛔ 已取消':(data.registration_open?'OPEN':'CLOSED')}</span><span class="badge">代碼 ${esc(slug)}</span></div>
    <div class="actions"><button onclick="location.href=\'manage.html?slug=${slug}\'">🔒 管理活動</button><button class="secondary" onclick="openRegister('${slug}')">開啟報名頁</button></div></div>`);
  }
  list.innerHTML=cards.join('')||'<div class="muted">找不到活動資料。</div>';
@@ -1404,7 +1386,7 @@ window.openRegister=async slug=>{
  $('#regForm').style.display=(!data.cancelled&&data.registration_open)?'block':'none';show('registerView');history.replaceState({},'',location.pathname+'?event='+slug);
 };
 $('#regForm').addEventListener('submit',async ev=>{
- ev.preventDefault();const f=new FormData(ev.target);const missingReq=$$('#leaderRequiredGear input[data-required="1"]').filter(x=>!x.checked);if(missingReq.length)return alert('領隊要求裝備為本次活動必備，請逐項確認已準備後再報名。');
+ ev.preventDefault();const f=new FormData(ev.target);const missingReq=$$('#leaderRequiredGear input[data-required="1"]').filter(x=>!x.checked);if(missingReq.length)return alert('尚有主揪指定的必備裝備未確認，請全部確認後再完成報名。');
  if(!confirm(`請確認資料：\n${f.get('name')}\n${f.get('birth')}\n${f.get('phone')}`))return;
  const args={p_slug:currentSlug,p_name:norm(f.get('name')),p_gender:f.get('gender'),p_birth_date:f.get('birth'),p_id_number:norm(f.get('idno')).toUpperCase(),p_phone:phone(f.get('phone')),p_address:norm(f.get('address')),p_email:norm(f.get('email')),p_emergency_name:norm(f.get('emergency_name')),p_emergency_relation:norm(f.get('emergency_relation')),p_emergency_phone:phone(f.get('emergency_phone')),p_experience:norm(f.get('experience')),p_recent_hikes:norm(f.get('recent_hikes')),p_high_altitude:norm(f.get('high_altitude')),p_diet:norm(f.get('diet')),p_transport_type:f.get('transport_type'),p_pickup_place:norm(f.get('pickup_place')),p_note:norm(f.get('note'))};
  const {data,error}=await sb.rpc('register_participant',args);if(error)return alert(error.message);
@@ -1412,7 +1394,7 @@ $('#regForm').addEventListener('submit',async ev=>{
 });
 $('#recoverBtn').onclick=()=>show('recoverView');
 $('#recoverForm').addEventListener('submit',async ev=>{
- ev.preventDefault();const f=new FormData(ev.target);const {data,error}=await sb.rpc('recover_my_registration',{p_slug:currentSlug,p_name:norm(f.get('name')),p_birth_date:f.get('birth'),p_phone:phone(f.get('phone')),p_id_last4:norm(f.get('last4'))});
+ ev.preventDefault();const f=new FormData(ev.target);const {data,error}=await sb.rpc('v33_recover_my_registration',{p_slug:currentSlug,p_name:norm(f.get('name')),p_phone:phone(f.get('phone')),p_email:norm(f.get('email'))||null});
  if(error)return alert(error.message);const r=data?.[0];if(!r?.success)return alert(r?.message||'找不到資料');currentParticipantToken=r.edit_token;renderEdit();show('editView');
 });
 async function renderEdit(){
@@ -1434,7 +1416,7 @@ $('#removeCover').onclick=()=>alert('封面照片上傳會在 Storage 版接上�
 (async()=>{
  const q=new URLSearchParams(location.search);
  if(q.get('edit')){currentParticipantToken=q.get('edit');await renderEdit();show('editView')}
- else if(q.get('event'))await openRegister(q.get('event'));
+ else if(q.get('event')){await openRegister(q.get('event'));if(q.get('recover')==='1')show('recoverView');}
  else {show('managerView');managerMode('home');renderEvents()}
 })();
 })();
