@@ -501,8 +501,8 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 <section id="managerView">
 <div id="homeLauncher">
 <div class="launchGrid">
-<div class="launchCard primary"><div class="launchIcon">🏕</div><div class="kicker">活動報名</div><h2>我要報名</h2><p class="muted">直接選擇想參加的活動，查看行程資訊並完成報名。</p><button id="goJoin" onclick="location.href='activities.html?mode=join'" type="button">選擇活動</button></div>
-<div class="launchCard"><div class="launchIcon">🔒</div><div class="kicker">領隊</div><h2>活動管理</h2><p class="muted">查看既有活動，輸入該活動自己的管理密碼。</p><button class="secondary" id="goManage" onclick="location.href='activities.html?mode=manage'" type="button">查看活動</button></div>
+<div class="launchCard primary"><div class="launchIcon">🏕</div><div class="kicker">活動報名</div><h2>我要報名</h2><p class="muted">直接選擇想參加的活動，查看行程資訊並完成報名。</p><button id="goJoin" onclick="location.href='./register.html'" type="button">選擇活動</button></div>
+<div class="launchCard"><div class="launchIcon">🔒</div><div class="kicker">領隊</div><h2>活動管理</h2><p class="muted">查看既有活動，輸入該活動自己的管理密碼。</p><button class="secondary" id="goManage" onclick="location.href='./management.html'" type="button">查看活動</button></div>
 <div class="launchCard"><div class="launchIcon">＋</div><div class="kicker">新增活動</div><h2>建立新活動</h2><p class="muted">只有這次活動的建立者／領隊才需要按這裡。</p><button class="ghost" id="goCreate" type="button">建立新活動</button></div>
 </div>
 <section class="v194Home" id="publicHomeContent">
@@ -515,7 +515,7 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 </div>
 <div class="v194Grid">
 <article class="v194Card">
-<div class="v194Head"><div><div class="kicker">近期活動</div><h2>🏔️ 近期活動</h2></div><a class="ghost v195MiniBtn" href="activities.html">查看全部活動 →</a></div>
+<div class="v194Head"><div><div class="kicker">近期活動</div><h2>🏔️ 近期活動</h2></div><a class="ghost v195MiniBtn" href="./activities.html">查看全部活動 →</a></div>
 <div id="homeActivities"><div class="homeEmpty">讀取活動中…</div></div>
 </article>
 <article class="v194Card">
@@ -540,14 +540,14 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 <div class="small muted" style="margin-top:10px">完整 122 項清單會在獨立檢查頁開啟。</div>
 </article>
 <article class="v194Card">
-<div class="v194Head"><div><div class="kicker">登山文章／分享</div><h2>📚 登山文章／分享</h2></div><button class="ghost v195MiniBtn" onclick="document.getElementById('v195ArticleModal').classList.add('open')" type="button">＋ 新增分享</button></div>
+<div class="v194Head"><div><div class="kicker">登山文章／分享</div><h2>📚 登山文章／分享</h2></div><button class="ghost v195MiniBtn" onclick="document.getElementById('v195ArticleModal').classList.add('open')" type="button">＋ 新增分享</button><a class="ghost v195MiniBtn" href="./articles.html">查看全部文章 →</a></div>
 <div id="homeArticles"><div class="muted">目前還沒有公開文章。</div></div>
 </article>
 <article class="v194Card">
 <div class="v194Head"><div><div class="kicker">快速功能</div><h2>🧭 快速功能</h2></div></div>
 <div class="v194QuickGrid">
 <button class="v194Quick" id="v194Create" onclick="document.getElementById('goCreate')?.click()" type="button"><b>＋ 建立活動</b><span>新增一場登山活動</span></button>
-<button class="v194Quick" id="v194Manage" onclick="location.href='activities.html?mode=manage'" type="button"><b>🔒 活動管理</b><span>名單、費用與活動設定</span></button>
+<button class="v194Quick" id="v194Manage" onclick="location.href='./management.html'" type="button"><b>🔒 活動管理</b><span>名單、費用與活動設定</span></button>
 <button class="v194Quick" id="v194GearJump" onclick="document.getElementById('homeChecklistType')?.scrollIntoView({behavior:'smooth',block:'center'})" type="button"><b>🎒 裝備檢查</b><span>快速跳到自檢工具</span></button>
 <button class="v194Quick" id="v194ClimateJump" onclick="document.getElementById('homeMountainArea')?.scrollIntoView({behavior:'smooth',block:'center'})" type="button"><b>🌡️ 氣候參考</b><span>查看月份溫度</span></button>
 </div>
@@ -1053,7 +1053,7 @@ document.addEventListener('click',function(e){
   if(!card)return;
   e.preventDefault();
   const slug=card.dataset.slug;
-  if(slug)location.href='activities.html?event='+encodeURIComponent(slug);
+  if(slug)location.href='./activity.html?slug='+encodeURIComponent(slug);
 });
 document.addEventListener('keydown',function(e){
   if(e.key!=='Enter'&&e.key!==' ')return;
@@ -1061,7 +1061,7 @@ document.addEventListener('keydown',function(e){
   if(!card)return;
   e.preventDefault();
   const slug=card.dataset.slug;
-  if(slug)location.href='activities.html?event='+encodeURIComponent(slug);
+  if(slug)location.href='./activity.html?slug='+encodeURIComponent(slug);
 });
 
 async function renderPublicHome(){
