@@ -1298,77 +1298,33 @@ async function renderEvents(){
 }
 
 window.requestManage=async slug=>{
- const diag=(msg)=>{
-   console.log('[管理活動診斷]',msg);
-   let box=document.getElementById('manageDiagBox');
-   if(!box){
-     box=document.createElement('div');
-     box.id='manageDiagBox';
-     box.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff;border:2px solid #222;border-radius:14px;padding:12px;box-shadow:0 8px 30px #0003;font-size:14px;white-space:pre-wrap';
-     document.body.appendChild(box);
-   }
-   box.textContent=msg;
- };
  try{
-  diag('① 管理活動按鈕已觸發');
-  if(!sb){diag('❌ ② Supabase 尚未初始化');return alert('Supabase 尚未初始化');}
-
+  if(!sb)return alert('目前無法連線 Supabase，請重新整理後再試。');
   slug=norm(slug).toUpperCase();
-  diag('② 活動代碼：'+slug);
   if(!slug)return alert('找不到活動代碼');
-
-  const pw=prompt('請輸入活動管理密碼：');
-  if(pw===null){diag('⚠️ 已取消輸入密碼');return;}
-
+  const pw=prompt('請輸入活動管理密碼：'); if(pw===null)return;
   const cleanPw=String(pw).trim();
-  if(!cleanPw){diag('❌ 密碼為空白');return alert('請輸入活動管理密碼');}
+  if(!cleanPw)return alert('請輸入活動管理密碼');
+  const rpcPromise=sb.rpc('v17_manager_snapshot',{p_slug:slug,p_password:cleanPw});
+  const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('管理資料讀取逾時，請重新整理後再試')),12000));
+  const {data,error}=await Promise.race([rpcPromise,timeoutPromise]);
+  if(error)return alert(error.message);
+  if(!data||!data.activity)return alert('活動管理資料讀取失敗');
+  currentSlug=slug;currentPassword=cleanPw;currentSnapshot=data;
 
-  diag('③ 密碼已輸入，正在驗證管理資料…');
-
-  const result=await sb.rpc('v17_manager_snapshot',{
-    p_slug:slug,
-    p_password:cleanPw
-  });
-
-  if(result.error){
-    diag('❌ ④ RPC 失敗\n'+result.error.message);
-    return alert('管理資料讀取失敗：'+result.error.message);
-  }
-
-  const data=result.data;
-  diag('④ RPC 成功，準備進入管理頁');
-
-  if(!data){
-    diag('❌ RPC 成功但沒有回傳資料');
-    return alert('活動管理沒有回傳資料');
-  }
-  if(!data.activity){
-    diag('❌ 回傳資料缺少 activity\n'+JSON.stringify(data,null,2).slice(0,1200));
-    return alert('活動管理資料缺少 activity');
-  }
-
-  currentSlug=slug;
-  currentPassword=cleanPw;
-  currentSnapshot=data;
-
-  diag('⑤ 密碼驗證成功，切換管理畫面');
+  // 核心：驗證成功就先進管理頁，不讓任何次要區塊 render 錯誤把「管理活動」整顆按鈕拖死。
   show('manageView');
-
-  setTimeout(()=>{
-    try{
-      renderManage();
-      diag('✅ ⑥ 活動管理頁載入完成');
-      setTimeout(()=>document.getElementById('manageDiagBox')?.remove(),1800);
-    }catch(e){
-      console.error(e);
-      diag('⚠️ ⑥ 已進管理頁，但 renderManage 發生錯誤\n'+(e?.stack||e?.message||e));
-      alert('已登入活動管理，但部分畫面載入失敗：'+(e?.message||e));
-    }
-  },30);
-
+  try{
+    renderManage();
+  }catch(renderErr){
+    console.error('管理頁部分內容載入失敗',renderErr);
+    $('#manageTitle').textContent=data?.activity?.name||'活動管理';
+    const box=$('#manageSummary');
+    if(box)box.innerHTML='<div class="notice">活動管理已登入，但部分欄位載入失敗。其他可用功能仍可操作。</div>';
+    alert('已進入活動管理；部分欄位載入失敗：'+(renderErr?.message||renderErr));
+  }
  }catch(e){
-  console.error(e);
-  diag('❌ 未預期錯誤\n'+(e?.stack||e?.message||e));
+  console.error('開啟活動管理失敗',e);
   alert('開啟活動管理失敗：'+(e?.message||e));
  }
 };
@@ -1380,7 +1336,7 @@ function renderManageExtraFees(fees){
 }
 function renderManage(){
  const s=currentSnapshot||{},a=s.activity||{},ps=Array.isArray(s.participants)?s.participants:[],fees=Array.isArray(s.fees)?s.fees:[];
- $('#manageTitle').textContent=a.name;$('#mName').value=a.name;$('#mMeetingAt').value=a.meeting_at?String(a.meeting_at).slice(0,16):'';$('#mMeetingPlace').value=a.meeting_place||'';$('#mLodgingType').value=a.lodging_type||'';$('#mExpectedDownAt').value=a.expected_down_at?String(a.expected_down_at).slice(0,16):'';$('#mTripNote').value=a.trip_note||'';$('#mShowHome').checked=a.show_on_home!==false;$('#coverPreview').innerHTML=a.cover_image?`<div class="photoPreview"><img src="${esc(a.cover_image)}" alt="活動封面"></div>`:'<div class="muted small">目前沒有封面照片。</div>';$('#mStart').value=a.start_date;$('#mEnd').value=a.end_date;$('#mCutoff').value=a.cutoff_at?String(a.cutoff_at).slice(0,16):'';$('#mTotalPeople').value=a.total_people||1;
+ $('#manageTitle').textContent=a.name;$('#mName').value=a.name;$('#mMeetingAt').value=a.meeting_at?String(a.meeting_at).slice(0,16):'';$('#mMeetingPlace').value=a.meeting_place||'';$('#mLodgingType').value=a.lodging_type||'';$('#mExpectedDownAt').value=a.expected_down_at?String(a.expected_down_at).slice(0,16):'';$('#mTripNote').value=a.trip_note||'';$('#mShowHome').checked=a.show_on_home!==false;$('#coverPreview').innerHTML=a.has_cover?'<div class="muted small">✅ 已設定活動封面。為避免管理頁載入卡住，這裡不下載原始 Base64 圖片。</div>':'<div class="muted small">目前沒有封面照片。</div>';$('#mStart').value=a.start_date;$('#mEnd').value=a.end_date;$('#mCutoff').value=a.cutoff_at?String(a.cutoff_at).slice(0,16):'';$('#mTotalPeople').value=a.total_people||1;
  $('#manageCountdown').innerHTML=`<div class="notice"><b>${countdownText(a.start_date)}</b></div>`;$('#mMountainArea').innerHTML=mountainOptions(a.mountain_area||'');$('#mMountainName').value=a.mountain_name||'';const safeRequiredGear=Array.isArray(a.required_gear)?a.required_gear:[];manageCustomGears=safeRequiredGear.filter(g=>!GEAR_PRESETS.includes(g));renderGearPicker('#manageGearPicker',safeRequiredGear);renderCustom('#manageCustomGearList',manageCustomGears);renderManageArticles(Array.isArray(s.articles)?s.articles:[]);
  $('#toggleOpen').textContent=a.cancelled?'活動已取消':(a.registration_open?'手動關閉報名':'重新開放報名');$('#toggleOpen').disabled=!!a.cancelled;
  $('#toggleCancel').textContent=a.cancelled?'恢復此活動':'⛔ 取消活動';$('#toggleLock').textContent=a.data_locked?'解除修改鎖定':'鎖定隊員修改';
@@ -1403,7 +1359,7 @@ function renderManageArticles(items){
 }
 window.deleteArticle=async id=>{if(!confirm('刪除這篇文章？'))return;const {error}=await sb.rpc('v18_delete_article',{p_slug:currentSlug,p_password:currentPassword,p_article_id:id});if(error)alert(error.message);else refreshManage()};
 $('#manageAddGear').onclick=()=>{const g=norm($('#manageCustomGear').value);if(g&&!manageCustomGears.includes(g))manageCustomGears.push(g);$('#manageCustomGear').value='';renderCustom('#manageCustomGearList',manageCustomGears)};
-$('#removeCover').onclick=async()=>{if(!confirm('移除活動封面？'))return;const {error}=await sb.rpc('v18_update_home_card',{p_slug:currentSlug,p_password:currentPassword,p_cover_image:null,p_show_on_home:$('#mShowHome').checked});if(error)alert(error.message);else{refreshManage();renderPublicHome()}};
+$('#removeCover').onclick=async()=>{if(!confirm('移除活動封面？'))return;const {error}=await sb.rpc('v27_update_home_card',{p_slug:currentSlug,p_password:currentPassword,p_cover_image:null,p_show_on_home:$('#mShowHome').checked,p_remove_cover:true});if(error)alert(error.message);else{refreshManage();renderPublicHome()}};
 
 $('#saveTripBrief').onclick=async()=>{
  const {error}=await sb.rpc('v19_update_trip_brief',{p_slug:currentSlug,p_password:currentPassword,p_meeting_at:$('#mMeetingAt').value||null,p_meeting_place:norm($('#mMeetingPlace').value),p_lodging_type:$('#mLodgingType').value,p_expected_down_at:$('#mExpectedDownAt').value||null,p_trip_note:norm($('#mTripNote').value)});
@@ -1426,10 +1382,10 @@ $('#saveFees').onclick=async()=>{
 };
 $('#saveEvent').onclick=async()=>{
  const patch={name:norm($('#mName').value),start:$('#mStart').value,end:$('#mEnd').value,cutoff:$('#mCutoff').value||null,total_people:+$('#mTotalPeople').value};
- let cover=currentSnapshot?.activity?.cover_image||null;
+ let cover=null;
  const file=$('#mCover').files?.[0];if(file)cover=await compressImage(file);
  const {error}=await sb.rpc('v17_update_activity',{p_slug:currentSlug,p_password:currentPassword,p_patch:patch});if(error)return alert(error.message);
- const {error:homeErr}=await sb.rpc('v18_update_home_card',{p_slug:currentSlug,p_password:currentPassword,p_cover_image:cover,p_show_on_home:$('#mShowHome').checked});
+ const {error:homeErr}=await sb.rpc('v27_update_home_card',{p_slug:currentSlug,p_password:currentPassword,p_cover_image:cover,p_show_on_home:$('#mShowHome').checked,p_remove_cover:false});
  if(homeErr)return alert(homeErr.message);alert('活動設定已儲存');$('#mCover').value='';refreshManage();renderPublicHome();
 };
 async function action(kind){const {error}=await sb.rpc('v17_activity_action',{p_slug:currentSlug,p_password:currentPassword,p_action:kind});if(error)alert(error.message);else refreshManage()}
