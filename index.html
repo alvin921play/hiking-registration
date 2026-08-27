@@ -1347,10 +1347,11 @@ window.requestManage=async slug=>{
   const cleanPw=String(pw).trim();
   if(!cleanPw)return alert('請輸入活動管理密碼');
 
-  const data=await directRpc('v17_manager_snapshot',{
+  const raw=await directRpc('v29_manager_snapshot',{
    p_slug:slug,
    p_password:cleanPw
   },12000);
+  const data=Array.isArray(raw)?raw[0]?.snapshot:(raw?.snapshot||raw);
 
   if(!data||!data.activity)return alert('活動管理資料讀取失敗');
 
@@ -1417,7 +1418,8 @@ $('#addArticle').onclick=async()=>{const title=norm($('#articleTitle').value);if
 
 async function refreshManage(){
  try{
-  const data=await directRpc('v17_manager_snapshot',{p_slug:currentSlug,p_password:currentPassword},12000);
+  const raw=await directRpc('v29_manager_snapshot',{p_slug:currentSlug,p_password:currentPassword},12000);
+  const data=Array.isArray(raw)?raw[0]?.snapshot:(raw?.snapshot||raw);
   if(!data||!data.activity)return alert('活動管理資料讀取失敗');
   currentSnapshot=data;
   renderManage();
