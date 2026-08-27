@@ -1,57 +1,20 @@
-<!doctype html>
-<html lang="zh-Hant">
-<head>
+<!doctype html><html lang="zh-Hant"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>全部活動｜HIKING 活動報名</title>
+<title>活動查詢｜HIKING</title>
 <style>
 :root{--ink:#293129;--paper:#f4f0e6;--card:#fffdf7;--line:#d9d2c4;--green:#385f46}
-*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif}
-.wrap{width:min(1050px,calc(100% - 28px));margin:auto;padding:26px 0 60px}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.brand{font-weight:900}.back{color:var(--ink);text-decoration:none}
-h1{font-size:clamp(30px,5vw,54px);margin:6px 0}.muted{opacity:.68}.kicker{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:24px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(42,51,43,.07)}
-.cover{aspect-ratio:16/7;background:linear-gradient(145deg,#244632,#385f46);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;overflow:hidden}
-.cover img{width:100%;height:100%;object-fit:cover}.body{padding:16px}.body h2{margin:4px 0 8px;font-size:22px}.meta{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 15px}
-.chip{background:#eee8dc;border-radius:999px;padding:5px 9px;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap}
-button,.btn{border:0;border-radius:11px;padding:10px 13px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block;background:var(--green);color:white}
-.btn.secondary{background:#e8e2d6;color:var(--ink)}.empty{padding:24px;background:var(--card);border-radius:16px}
-@media(max-width:680px){.grid{grid-template-columns:1fr}}
-</style>
-</head>
-<body><main class="wrap">
-<div class="top"><div class="brand">△ 登山報名</div><a class="back" href="index.html">← 回首頁</a></div>
-<div class="kicker">Activities</div><h1 id="pageTitle">全部活動</h1>
-<p class="muted" id="pageHint">先選活動，再決定要報名、修改資料或進入主揪管理。</p>
-<div id="list" class="grid"><div class="empty">讀取活動中…</div></div>
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif}.wrap{width:min(1050px,calc(100% - 28px));margin:auto;padding:25px 0 60px}
+.top{display:flex;justify-content:space-between;align-items:center}.top a{color:inherit;text-decoration:none}.bear{background:#e8e2d6;border-radius:16px;padding:12px 15px;margin:18px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer}.cover{aspect-ratio:16/8;background:#dfe4dd;display:flex;align-items:center;justify-content:center;overflow:hidden}.cover img{width:100%;height:100%;object-fit:cover}.body{padding:15px}h1{font-size:clamp(30px,5vw,52px)}h2{margin:5px 0}.chip{display:inline-block;background:#eee8dc;border-radius:999px;padding:5px 9px;font-size:12px;margin:5px 4px 0 0}.muted{opacity:.68}.empty{padding:24px;background:var(--card);border-radius:16px}@media(max-width:680px){.grid{grid-template-columns:1fr}}
+</style></head><body><main class="wrap">
+<div class="top"><b>△ 活動查詢</b><a href="./index.html">← 回首頁</a></div>
+<h1>所有活動</h1>
+<div class="bear">🐻 此區僅供活動資訊查詢。要參加活動，請回首頁點選「我要報名」。<br><span class="muted">山一直都在，報名入口也一直都在首頁……不用從這裡鑽過去。</span></div>
+<div id="list" class="grid"><div class="empty">資料正在走上坡……</div></div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app-config.js"></script>
 <script>
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const cfg=window.APP_CONFIG||{};const sb=(cfg.SUPABASE_URL&&cfg.SUPABASE_PUBLISHABLE_KEY)?supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_PUBLISHABLE_KEY):null;
-const qs=new URLSearchParams(location.search),mode=qs.get('mode')||'',eventSlug=qs.get('event');
-if(mode==='manage'){pageTitle.textContent='選擇要管理的活動';pageHint.textContent='選擇活動後，輸入建立活動時設定的管理密碼。'}
-if(mode==='join'){pageTitle.textContent='選擇活動';pageHint.textContent='查看活動內容後，可報名或查看／修改自己的報名資料。'}
-async function load(){
- if(!sb){list.innerHTML='<div class="empty">目前無法連線活動資料。</div>';return}
- const {data,error}=await sb.rpc('v23_home_feed');
- if(error){list.innerHTML='<div class="empty">活動讀取失敗：'+esc(error.message)+'</div>';return}
- const items=data?.activities||[];
- if(eventSlug){
-   const a=items.find(x=>String(x.slug).toUpperCase()===String(eventSlug).toUpperCase());
-   if(a){location.replace('index.html?event='+encodeURIComponent(a.slug));return}
- }
- list.innerHTML=items.length?items.map(a=>`<article class="card">
-   <div class="cover">${a.cover_image?`<img src="${esc(a.cover_image)}" alt="${esc(a.name)} 封面">`:`▲ ${esc(a.mountain_name||a.mountain_area||'TRIP')}`}</div>
-   <div class="body"><div class="kicker">${a.cancelled?'Cancelled':'Upcoming trip'}</div><h2>${esc(a.name)}</h2>
-   <div>${esc(a.start_date)} — ${esc(a.end_date)}</div>
-   <div class="meta"><span class="chip">👥 ${Number(a.participant_count||0)} / ${Number(a.total_people||0)||'—'}</span><span class="chip">${a.cancelled?'已取消':(a.registration_open===false?'已截止':'報名中')}</span></div>
-   <div class="actions">
-     <a class="btn" href="index.html?event=${encodeURIComponent(a.slug)}">查看／報名</a>
-     <a class="btn secondary" href="index.html?event=${encodeURIComponent(a.slug)}&recover=1">查看／修改我的報名</a>
-     <a class="btn secondary" href="manage.html?slug=${encodeURIComponent(a.slug)}">主揪管理</a>
-   </div></div></article>`).join(''):'<div class="empty">目前沒有活動。</div>';
-}
-load();
+const cfg=window.APP_CONFIG||{};const sb=supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_PUBLISHABLE_KEY);
+async function load(){const {data,error}=await sb.rpc('v23_home_feed');if(error){list.innerHTML='<div class="empty">🐻 活動資料走不動了：'+esc(error.message)+'</div>';return}
+const xs=data?.activities||[];list.innerHTML=xs.length?xs.map(a=>`<article class="card" onclick="location.href='./activity.html?slug=${encodeURIComponent(a.slug)}'"><div class="cover">${a.cover_image?`<img src="${esc(a.cover_image)}">`:'🐻 看風景中'}</div><div class="body"><h2>${esc(a.name)}</h2><div>${esc(a.start_date)} — ${esc(a.end_date)}</div><span class="chip">主揪：${esc(a.organizer_name||'未填寫')}</span><span class="chip">👥 ${Number(a.participant_count||0)} / ${Number(a.total_people||0)||'—'}</span><span class="chip">${a.cancelled?'已取消':a.registration_open===false?'已截止':'報名中'}</span><p class="muted">查看活動資料 →</p></div></article>`).join(''):'<div class="empty">🐻 目前沒有活動。山還在，人可能懶了。</div>'}load();
 </script></body></html>
