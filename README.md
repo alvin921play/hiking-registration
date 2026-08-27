@@ -1,3 +1,4 @@
+[README.md](https://github.com/user-attachments/files/31499229/README.md)
 [README.md](https://github.com/user-attachments/files/31447069/README.md)
 
 
@@ -11,7 +12,23 @@
 3. 產生活動代碼 / 分享網址
 4. 另一台裝置打開活動
 5. 送出報名
-6. Supabase 寫入 participants
+6. Supabase 寫入 participants# Hiking Registration
+
+整個 Git 專案可直接覆蓋使用。
+
+## 根目錄必須包含
+- index.html
+- manage.html
+- config.js
+- vercel.json
+
+## 部署後測試
+1. 首頁：/
+2. 管理頁：/manage.html?slug=78D81E6D
+3. 也可使用：/manage?slug=78D81E6D
+
+Supabase 資料庫沿用目前已建立的 functions / tables；本包不會刪除資料。
+
 
 ## 上傳 GitHub 前
 打開 `config.js`，只填：
