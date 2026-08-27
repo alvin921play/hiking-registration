@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -166,6 +167,7 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const params=new URLSearchParams(location.search);
 let slug=norm(params.get('slug')).toUpperCase();
 let password='';
+let managerToken='';
 let snapshot=null;
 let customGears=[];
 const gearPresets=['登山背包','登山杖','排汗衣','保暖層','防風防水外層','登山鞋／越野鞋','頭燈','備用電池／電力','離線地圖','飲水','行動糧','個人藥品','急救用品','身分證件','睡袋','睡墊','帳篷','爐具／燃料','餐具','垃圾袋'];
@@ -179,7 +181,8 @@ async function rpc(name,args){
 }
 
 async function loadSnapshot(){
-  const raw=await rpc('v29_manager_snapshot',{p_slug:slug,p_password:password});
+  if(!managerToken)throw new Error('尚未登入活動管理');
+  const raw=await rpc('v31_manager_snapshot',{p_token:managerToken});
   snapshot=Array.isArray(raw)?raw[0]?.snapshot:(raw?.snapshot||raw);
   if(!snapshot?.activity)throw new Error('活動管理資料讀取失敗');
   render();
@@ -244,6 +247,8 @@ $('#loginBtn').onclick=async()=>{
     if(!slug)return alert('缺少活動代碼');
     if(!password)return alert('請輸入管理密碼');
     $('#loginMsg').textContent='正在驗證…';
+    managerToken=await rpc('v31_manager_login',{p_slug:slug,p_password:password});
+    if(!managerToken)throw new Error('管理登入失敗');
     await loadSnapshot();
     $('#loginCard').classList.add('hidden');
     $('#manageApp').classList.remove('hidden');
