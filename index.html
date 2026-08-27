@@ -460,6 +460,29 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 .v22UploadPreview{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.v22UploadPreview img{width:76px;height:58px;object-fit:cover;border-radius:10px;border:1px solid #ddd5c8}
 @media(max-width:650px){.v22ArticleImages{grid-template-columns:1fr}.v22ArticlePage{width:min(100% - 16px,860px)}}
 
+
+#eventCards{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px!important}
+#eventCards .eventCard{padding:12px!important;margin:0!important;min-height:0!important}
+#eventCards .eventCard .eventCover,
+#eventCards .eventCard .cover,
+#eventCards .eventCard img{max-height:135px!important;object-fit:cover!important}
+#eventCards .eventCard h3{font-size:18px!important;margin:8px 0 5px!important}
+#eventCards .eventCard p{margin:5px 0!important}
+#eventCards .eventCard button{padding:8px 10px!important}
+@media(max-width:820px){#eventCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:520px){#eventCards{grid-template-columns:1fr!important}#eventCards .eventCard{padding:10px!important}#eventCards .eventCard .eventCover,#eventCards .eventCard .cover,#eventCards .eventCard img{max-height:105px!important}}
+
+.homeTripGrid,#homeActivities{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px!important}
+.homeTripCard{display:grid!important;grid-template-columns:110px minmax(0,1fr)!important;min-height:0!important;border-radius:14px!important;overflow:hidden!important}
+.homeTripCover{min-height:118px!important;height:100%!important}
+.homeTripCover img{width:100%!important;height:100%!important;max-height:145px!important;object-fit:cover!important}
+.homeTripFallback{height:100%!important;min-height:118px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:8px!important}
+.homeTripBody{padding:11px!important}
+.homeTripBody h3{font-size:17px!important;margin:4px 0 5px!important;line-height:1.25!important}
+.homeTripMeta{gap:5px!important;margin:7px 0!important}
+.homeTripMeta .chip,.homeTripMeta .badge{padding:4px 7px!important;font-size:11px!important}
+@media(max-width:900px){.homeTripGrid,#homeActivities{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:580px){.homeTripGrid,#homeActivities{grid-template-columns:1fr!important}.homeTripCard{grid-template-columns:92px minmax(0,1fr)!important}.homeTripCover,.homeTripFallback{min-height:102px!important}.homeTripCover img{max-height:120px!important}}
 </style>
 <style>
 .prepGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
@@ -640,7 +663,13 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 </div></div>
 <div class="hidden" id="createConfirm"><div class="card createConfirm"><button class="ghost homeReturn" onclick="location.assign(location.pathname)" type="button">← 返回</button><div class="kicker">建立前確認</div><h2>建立新的登山活動？</h2><p>這個功能給本次活動的建立者／領隊使用。</p><div class="warning">如果你只是要填寫別人的活動，請使用領隊提供的活動連結，不需要建立新活動。</div><div class="actions"><button id="confirmCreate" type="button">我是領隊，繼續建立</button><button class="secondary homeReturn" onclick="location.assign(location.pathname)" type="button">返回</button></div></div></div>
 <div class="hidden" id="managerTools"><button class="ghost homeReturn" onclick="location.assign(location.pathname)" style="margin-bottom:12px" type="button">← 返回首頁</button>
-<div class="card">
+<div class="card" id="eventManageLookupCard">
+<div class="kicker">我的活動</div>
+<div id="eventAnchor"></div>
+<h2>🔒 我的活動</h2>
+<p class="muted small">這裡會顯示由這台裝置建立過的活動。選擇活動後，只需要輸入建立時設定的管理密碼。</p>
+<div id="eventList" style="margin-top:14px"></div>
+</div><div class="card">
 <div class="kicker">建立新活動</div>
 <div id="createAnchor"></div><h2>建立活動</h2><p class="muted small">手機可直接一路往下填；照片、費用與行程都可以之後再修改。</p>
 <form id="createForm">
@@ -1266,7 +1295,7 @@ $('#createForm').addEventListener('submit',async ev=>{
 
 async function renderEvents(){
  const list=$('#eventList'); if(!list)return;
- const slugs=known(); if(!slugs.length){list.innerHTML='<div class="muted">這台裝置沒有保存活動紀錄；可在上方直接輸入活動代碼管理。</div>';return}
+ const slugs=known(); if(!slugs.length){list.innerHTML='<div class="muted">這台裝置目前沒有保存已建立活動。</div>';return}
  const cards=[];
  for(const slug of slugs){
   const {data}=await sb.rpc('v17_public_activity',{p_slug:slug});
@@ -1274,7 +1303,7 @@ async function renderEvents(){
   cards.push(`<div class="event ${data.cancelled?'cancelledEvent':''}">
    <div class="kicker">Trip Card</div><h3>${esc(data.name)}</h3><div class="muted">${esc(data.start_date)} — ${esc(data.end_date)}</div>
    <div class="summaryStrip"><div class="summaryBox"><span>活動總人數</span><b>${data.total_people||0}</b></div><div class="summaryBox"><span>已填資料</span><b>${data.participant_count||0}</b></div></div>
-   <div class="meta"><span class="badge ${data.cancelled?'cancelled':''}">${data.cancelled?'⛔ 已取消':(data.registration_open?'OPEN':'CLOSED')}</span><span class="badge">代碼 ${esc(slug)}</span></div>
+   <div class="meta"><span class="badge ${data.cancelled?'cancelled':''}">${data.cancelled?'⛔ 已取消':(data.registration_open?'OPEN':'CLOSED')}</span></div>
    <div class="actions"><button onclick="location.href=\'manage.html?slug=${slug}\'">🔒 管理活動</button><button class="secondary" onclick="openRegister('${slug}')">開啟報名頁</button></div></div>`);
  }
  list.innerHTML=cards.join('')||'<div class="muted">找不到活動資料。</div>';
