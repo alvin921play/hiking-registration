@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>活動管理</title>
+<style>
+*{box-sizing:border-box}
+:root{--paper:#eee5d2;--cream:#fbf4e5;--forest:#244632;--ink:#1f2c24;--orange:#d96a36;--line:#2d4636;--muted:#6e7165;--danger:#8d3d34}
+body{margin:0;font-family:Arial,"Noto Sans TC",sans-serif;color:var(--ink);background:var(--paper)}
+.wrap{max-width:1080px;margin:auto;padding:18px 12px 50px}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}
+.brand{font-weight:900}.muted{color:var(--muted)}.small{font-size:12px}
+.card{background:var(--cream);border:2px solid var(--line);padding:20px;margin-bottom:16px;box-shadow:5px 5px 0 #b9ab8d}
+h1,h2,h3{font-family:Georgia,"Noto Serif TC",serif}
+h1{margin:6px 0 14px} h2{margin:5px 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+label{display:block;font-size:12px;font-weight:900;margin:11px 0}
+input,select,textarea{width:100%;padding:12px;margin-top:6px;border:2px solid var(--line);background:#fffaf0;font-size:16px;font-family:inherit}
+button,.btn{display:inline-block;border:2px solid var(--ink);background:var(--forest);color:#fff6df;padding:11px 14px;font-weight:900;text-decoration:none;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+button:hover,.btn:hover{transform:translate(-1px,-1px)}
+.ghost{background:#e8ddc5;color:var(--ink)}.danger{background:var(--danger)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.hidden{display:none!important}
+.notice{border:2px dashed var(--line);background:#e6dbc0;padding:12px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.summary>div{border:2px solid var(--line);background:#e6dbc0;padding:12px}
+.summary b{display:block;font-size:24px}
+.tablewrap{overflow:auto;border:2px solid var(--line)}
+table{border-collapse:collapse;width:100%;white-space:nowrap}
+th,td{padding:10px;border-bottom:1px solid #d0c5ac;text-align:left;font-size:13px}
+th{background:var(--forest);color:#fff}
+.kicker{font-size:11px;font-weight:900;letter-spacing:.16em;color:var(--orange)}
+.gearGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.gearChoice{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #d7cfbf;background:#fffdf7}
+.gearChoice input{width:auto;margin:0}
+.log{padding:10px 0;border-bottom:1px dashed #9d947f}
+@media(max-width:720px){.grid,.summary,.gearGrid{grid-template-columns:1fr}.actions>*{width:100%}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+  <div class="brand">△ 活動管理</div>
+  <a class="btn ghost" href="./">← 返回首頁</a>
+</div>
+
+<section id="loginCard" class="card">
+  <div class="kicker">領隊登入</div>
+  <h1 id="loginTitle">活動管理</h1>
+  <div class="grid">
+    <label>活動代碼<input id="slugInput" readonly></label>
+    <label>管理密碼<input id="passwordInput" type="password" autocomplete="current-password"></label>
+  </div>
+  <button id="loginBtn" type="button">進入活動管理</button>
+  <div id="loginMsg" class="muted small" style="margin-top:10px"></div>
+</section>
+
+<section id="manageApp" class="hidden">
+  <div class="card">
+    <div class="kicker">活動管理</div>
+    <h1 id="title"></h1>
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <div class="card">
+    <h2>基本設定</h2>
+    <div class="grid">
+      <label>活動名稱<input id="mName"></label>
+      <label>報名截止<input id="mCutoff" type="datetime-local"></label>
+      <label>開始日期<input id="mStart" type="date"></label>
+      <label>結束日期<input id="mEnd" type="date"></label>
+      <label>活動總人數<input id="mTotalPeople" type="number" min="1"></label>
+      <label style="display:flex;align-items:center;gap:8px"><input id="mShowHome" type="checkbox" style="width:auto;margin:0"> 顯示在首頁</label>
+    </div>
+    <div class="actions">
+      <button id="saveBasic">儲存基本設定</button>
+      <button class="ghost" id="toggleOpen"></button>
+      <button class="ghost" id="toggleLock"></button>
+      <button class="ghost" id="toggleCancel"></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🧭 行前資訊</h2>
+    <div class="grid">
+      <label>集合時間<input id="mMeetingAt" type="datetime-local"></label>
+      <label>集合地點<input id="mMeetingPlace"></label>
+      <label>住宿方式
+        <select id="mLodgingType">
+          <option value="">未設定</option><option>山屋</option><option>帳篷野營</option><option>協作帳篷</option><option>民宿／住宿</option><option>當日來回</option><option>其他</option>
+        </select>
+      </label>
+      <label>預計下山<input id="mExpectedDownAt" type="datetime-local"></label>
+    </div>
+    <label>行前補充<textarea id="mTripNote" rows="4"></textarea></label>
+    <button id="saveTrip">儲存行前資訊</button>
+  </div>
+
+  <div class="card">
+    <h2>⚠️ 領隊必備裝備</h2>
+    <div class="grid">
+      <label>主要山區／路線<input id="mMountainArea"></label>
+      <label>目的地<input id="mMountainName"></label>
+    </div>
+    <div id="gearGrid" class="gearGrid"></div>
+    <div class="grid">
+      <label>新增自訂必備裝備<input id="customGear"></label>
+      <div style="align-self:end"><button class="ghost" id="addGear" type="button">＋ 加入</button></div>
+    </div>
+    <div id="customGearList" class="muted small"></div>
+    <button id="savePrep">儲存必備裝備</button>
+  </div>
+
+  <div class="card">
+    <h2>費用分攤</h2>
+    <div id="feeEditor"></div>
+    <button id="saveFees">儲存費用設定</button>
+  </div>
+
+  <div class="card">
+    <h2>報名名單</h2>
+    <div class="tablewrap">
+      <table><thead><tr><th>姓名</th><th>電話</th><th>集合方式</th><th>應付</th><th>付款</th></tr></thead><tbody id="memberRows"></tbody></table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>修改歷史</h2>
+    <div id="history"></div>
+  </div>
+
+  <div class="card">
+    <h2>📚 行前文章</h2>
+    <div class="grid">
+      <label>標題<input id="articleTitle"></label>
+      <label>分類<select id="articleCategory"><option>行前必讀</option><option>裝備</option><option>路線資訊</option><option>交通／集合</option><option>其他</option></select></label>
+    </div>
+    <label>內容<textarea id="articleContent" rows="4"></textarea></label>
+    <label>外部連結<input id="articleUrl" type="url"></label>
+    <label style="display:flex;align-items:center;gap:8px"><input id="articlePinned" type="checkbox" style="width:auto;margin:0"> 置頂</label>
+    <button id="addArticle">新增文章</button>
+    <div id="articles" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <h2>⚠️ 危險區</h2>
+    <button class="danger" id="deleteBtn">刪除此活動</button>
+  </div>
+</section>
+</div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const money=n=>'$'+Number(n||0).toLocaleString();
+const norm=s=>String(s||'').trim();
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+const SUPABASE_URL=String(window.APP_CONFIG?.SUPABASE_URL||'').replace(/\/+$/,'');
+const SUPABASE_KEY=String(window.APP_CONFIG?.SUPABASE_PUBLISHABLE_KEY||'').trim();
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const params=new URLSearchParams(location.search);
+let slug=norm(params.get('slug')).toUpperCase();
+let password='';
+let snapshot=null;
+let customGears=[];
+const gearPresets=['登山背包','登山杖','排汗衣','保暖層','防風防水外層','登山鞋／越野鞋','頭燈','備用電池／電力','離線地圖','飲水','行動糧','個人藥品','急救用品','身分證件','睡袋','睡墊','帳篷','爐具／燃料','餐具','垃圾袋'];
+
+$('#slugInput').value=slug;
+
+async function rpc(name,args){
+  const {data,error}=await sb.rpc(name,args);
+  if(error)throw error;
+  return data;
+}
+
+async function loadSnapshot(){
+  const raw=await rpc('v29_manager_snapshot',{p_slug:slug,p_password:password});
+  snapshot=Array.isArray(raw)?raw[0]?.snapshot:(raw?.snapshot||raw);
+  if(!snapshot?.activity)throw new Error('活動管理資料讀取失敗');
+  render();
+}
+
+function render(){
+  const a=snapshot.activity, ps=Array.isArray(snapshot.participants)?snapshot.participants:[], fees=Array.isArray(snapshot.fees)?snapshot.fees:[];
+  $('#title').textContent=a.name||'活動管理';
+  $('#mName').value=a.name||'';
+  $('#mCutoff').value=a.cutoff_at?String(a.cutoff_at).slice(0,16):'';
+  $('#mStart').value=a.start_date||'';
+  $('#mEnd').value=a.end_date||'';
+  $('#mTotalPeople').value=a.total_people||1;
+  $('#mShowHome').checked=a.show_on_home!==false;
+  $('#mMeetingAt').value=a.meeting_at?String(a.meeting_at).slice(0,16):'';
+  $('#mMeetingPlace').value=a.meeting_place||'';
+  $('#mLodgingType').value=a.lodging_type||'';
+  $('#mExpectedDownAt').value=a.expected_down_at?String(a.expected_down_at).slice(0,16):'';
+  $('#mTripNote').value=a.trip_note||'';
+  $('#mMountainArea').value=a.mountain_area||'';
+  $('#mMountainName').value=a.mountain_name||'';
+
+  $('#toggleOpen').textContent=a.registration_open?'手動關閉報名':'重新開放報名';
+  $('#toggleLock').textContent=a.data_locked?'解除修改鎖定':'鎖定隊員修改';
+  $('#toggleCancel').textContent=a.cancelled?'恢復此活動':'⛔ 取消活動';
+
+  const paid=ps.filter(p=>p.payment_status==='已付款').length;
+  $('#summary').innerHTML=`
+    <div><span>總人數</span><b>${a.total_people||0}</b></div>
+    <div><span>已報名</span><b>${ps.length}</b></div>
+    <div><span>已付款</span><b>${paid}</b></div>
+    <div><span>未付款</span><b>${ps.length-paid}</b></div>`;
+
+  const req=Array.isArray(a.required_gear)?a.required_gear:[];
+  customGears=req.filter(g=>!gearPresets.includes(g));
+  $('#gearGrid').innerHTML=gearPresets.map(g=>`<label class="gearChoice"><input type="checkbox" data-gear="${esc(g)}" ${req.includes(g)?'checked':''}> ${esc(g)}</label>`).join('');
+  $('#customGearList').innerHTML=customGears.length?'自訂必備：'+customGears.map(esc).join('、'):'目前沒有自訂必備裝備';
+
+  $('#feeEditor').innerHTML=fees.map((f,i)=>`
+    <div class="grid" data-fee="${i}">
+      <label>費用名稱<input class="feeName" value="${esc(f.name||'')}"></label>
+      <label>總額<input class="feeTotal" type="number" min="0" value="${Number(f.total_amount||0)}"></label>
+      <label>分攤人數<input class="feeSplit" type="number" min="1" value="${Number(f.split_count||1)}"></label>
+      <label>說明<input class="feeNote" value="${esc(f.note||'')}"></label>
+    </div>`).join('');
+
+  $('#memberRows').innerHTML=ps.length?ps.map(p=>`
+    <tr>
+      <td>${esc(p.name)}</td><td>${esc(p.phone||'')}</td><td>${esc(p.transport_type||'')}</td>
+      <td>${money(p.amount_due||0)}</td>
+      <td>${esc(p.payment_status||'未付款')}<br><button class="ghost" onclick="togglePaid('${p.id}','${p.payment_status==='已付款'?'未付款':'已付款'}')">${p.payment_status==='已付款'?'改未付款':'標記已付款'}</button></td>
+    </tr>`).join(''):'<tr><td colspan="5">目前尚無報名資料</td></tr>';
+
+  $('#history').innerHTML=(snapshot.logs||[]).map(l=>`<div class="log"><span class="muted small">${new Date(l.created_at).toLocaleString('zh-TW')}</span><br>${esc(l.detail)}</div>`).join('')||'<div class="muted">尚無紀錄</div>';
+
+  $('#articles').innerHTML=(snapshot.articles||[]).map(x=>`<div class="notice" style="margin-bottom:8px">${x.pinned?'📌 ':''}<b>${esc(x.title)}</b><br>${esc(x.content||'')} ${x.url?`<a href="${esc(x.url)}" target="_blank">連結</a>`:''}<br><button class="ghost" onclick="deleteArticle('${x.id}')">刪除</button></div>`).join('')||'<div class="muted">尚無文章</div>';
+}
+
+$('#loginBtn').onclick=async()=>{
+  try{
+    password=norm($('#passwordInput').value);
+    if(!slug)return alert('缺少活動代碼');
+    if(!password)return alert('請輸入管理密碼');
+    $('#loginMsg').textContent='正在驗證…';
+    await loadSnapshot();
+    $('#loginCard').classList.add('hidden');
+    $('#manageApp').classList.remove('hidden');
+    history.replaceState({},'',`manage.html?slug=${encodeURIComponent(slug)}`);
+  }catch(e){
+    $('#loginMsg').textContent='';
+    alert(e.message||e);
+  }
+};
+
+$('#saveBasic').onclick=async()=>{
+  try{
+    await rpc('v17_update_activity',{p_slug:slug,p_password:password,p_patch:{
+      name:norm($('#mName').value),start:$('#mStart').value,end:$('#mEnd').value,
+      cutoff:$('#mCutoff').value||null,total_people:+$('#mTotalPeople').value
+    }});
+    if(window.APP_CONFIG) {
+      await rpc('v27_update_home_card',{p_slug:slug,p_password:password,p_cover_image:null,p_show_on_home:$('#mShowHome').checked,p_remove_cover:false});
+    }
+    await loadSnapshot(); alert('基本設定已儲存');
+  }catch(e){alert(e.message||e)}
+};
+
+async function action(kind){try{await rpc('v17_activity_action',{p_slug:slug,p_password:password,p_action:kind});await loadSnapshot()}catch(e){alert(e.message||e)}}
+$('#toggleOpen').onclick=()=>action('toggle_open');
+$('#toggleLock').onclick=()=>action('toggle_lock');
+$('#toggleCancel').onclick=()=>action('toggle_cancel');
+
+$('#saveTrip').onclick=async()=>{
+  try{
+    await rpc('v19_update_trip_brief',{
+      p_slug:slug,p_password:password,
+      p_meeting_at:$('#mMeetingAt').value||null,
+      p_meeting_place:norm($('#mMeetingPlace').value),
+      p_lodging_type:$('#mLodgingType').value,
+      p_expected_down_at:$('#mExpectedDownAt').value||null,
+      p_trip_note:norm($('#mTripNote').value)
+    });
+    await loadSnapshot(); alert('行前資訊已儲存');
+  }catch(e){alert(e.message||e)}
+};
+
+$('#addGear').onclick=()=>{
+  const g=norm($('#customGear').value);
+  if(g&&!customGears.includes(g))customGears.push(g);
+  $('#customGear').value='';
+  $('#customGearList').innerHTML=customGears.length?'自訂必備：'+customGears.map(esc).join('、'):'目前沒有自訂必備裝備';
+};
+
+$('#savePrep').onclick=async()=>{
+  try{
+    const selected=[...document.querySelectorAll('[data-gear]:checked')].map(x=>x.dataset.gear).concat(customGears);
+    await rpc('v18_update_prep',{p_slug:slug,p_password:password,p_mountain_area:norm($('#mMountainArea').value),p_mountain_name:norm($('#mMountainName').value),p_required_gear:selected});
+    await loadSnapshot(); alert('必備裝備已儲存');
+  }catch(e){alert(e.message||e)}
+};
+
+$('#saveFees').onclick=async()=>{
+  try{
+    const fees=[...document.querySelectorAll('[data-fee]')].map(r=>({
+      name:norm(r.querySelector('.feeName').value),
+      total:+r.querySelector('.feeTotal').value,
+      split:Math.max(1,+r.querySelector('.feeSplit').value),
+      note:norm(r.querySelector('.feeNote').value)
+    })).filter(x=>x.name);
+    await rpc('v17_replace_fees',{p_slug:slug,p_password:password,p_fees:fees});
+    await loadSnapshot(); alert('費用設定已儲存');
+  }catch(e){alert(e.message||e)}
+};
+
+window.togglePaid=async(pid,status)=>{
+  try{await rpc('v17_set_payment',{p_slug:slug,p_password:password,p_participant_id:pid,p_status:status});await loadSnapshot()}catch(e){alert(e.message||e)}
+};
+
+$('#addArticle').onclick=async()=>{
+  try{
+    const title=norm($('#articleTitle').value); if(!title)return alert('請輸入文章標題');
+    await rpc('v18_add_article',{p_slug:slug,p_password:password,p_title:title,p_category:$('#articleCategory').value,p_content:norm($('#articleContent').value),p_url:norm($('#articleUrl').value),p_pinned:$('#articlePinned').checked});
+    $('#articleTitle').value='';$('#articleContent').value='';$('#articleUrl').value='';$('#articlePinned').checked=false;
+    await loadSnapshot();
+  }catch(e){alert(e.message||e)}
+};
+window.deleteArticle=async id=>{if(!confirm('刪除這篇文章？'))return;try{await rpc('v18_delete_article',{p_slug:slug,p_password:password,p_article_id:id});await loadSnapshot()}catch(e){alert(e.message||e)}};
+
+$('#deleteBtn').onclick=async()=>{
+  if(!confirm('確定永久刪除此活動？'))return;
+  const typed=prompt('請輸入活動名稱再次確認：');
+  if(typed!==snapshot.activity.name)return alert('活動名稱不一致');
+  try{await rpc('v17_delete_activity',{p_slug:slug,p_password:password});alert('活動已刪除');location.href='./'}catch(e){alert(e.message||e)}
+};
+</script>
+</body>
+</html>
