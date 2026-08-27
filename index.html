@@ -933,11 +933,50 @@ button.danger{background:#8d3f32;color:#fff;border-color:#5d2c24}
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 let sb=null;
+const SUPABASE_URL=String(window.APP_CONFIG?.SUPABASE_URL||'').replace(/\/+$/,'');
+const SUPABASE_KEY=String(window.APP_CONFIG?.SUPABASE_PUBLISHABLE_KEY||'').trim();
 try{
- if(window.supabase && window.APP_CONFIG?.SUPABASE_URL && window.APP_CONFIG?.SUPABASE_PUBLISHABLE_KEY){
-  sb=window.supabase.createClient(APP_CONFIG.SUPABASE_URL,APP_CONFIG.SUPABASE_PUBLISHABLE_KEY);
+ if(window.supabase && SUPABASE_URL && SUPABASE_KEY){
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
  }
 }catch(e){ console.warn('Supabase 尚未連線',e); } window.APP_DB=sb;
+
+// 管理 Snapshot 改走 REST RPC 直連，避開目前瀏覽器端 sb.rpc 卡住的問題。
+async function directRpc(functionName,payload,timeoutMs=12000){
+ if(!SUPABASE_URL||!SUPABASE_KEY)throw new Error('Supabase 設定不完整');
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),timeoutMs);
+ try{
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${encodeURIComponent(functionName)}`,{
+   method:'POST',
+   headers:{
+    'apikey':SUPABASE_KEY,
+    'Authorization':`Bearer ${SUPABASE_KEY}`,
+    'Content-Type':'application/json',
+    'Accept':'application/json'
+   },
+   body:JSON.stringify(payload||{}),
+   signal:controller.signal,
+   cache:'no-store'
+  });
+  const text=await r.text();
+  let data=null;
+  if(text){
+   try{data=JSON.parse(text)}catch(_){data=text}
+  }
+  if(!r.ok){
+   const msg=(data&&typeof data==='object'&&(data.message||data.error_description||data.hint))||String(data||`HTTP ${r.status}`);
+   throw new Error(msg);
+  }
+  return data;
+ }catch(e){
+  if(e?.name==='AbortError')throw new Error('管理資料讀取逾時');
+  throw e;
+ }finally{
+  clearTimeout(timer);
+ }
+}
+window.__directRpc=directRpc;
 window.uploadArticleImages=async function(files){
   const db=window.APP_DB;
   const arr=Array.from(files||[]);
@@ -1299,29 +1338,36 @@ async function renderEvents(){
 
 window.requestManage=async slug=>{
  try{
-  if(!sb)return alert('目前無法連線 Supabase，請重新整理後再試。');
   slug=norm(slug).toUpperCase();
   if(!slug)return alert('找不到活動代碼');
-  const pw=prompt('請輸入活動管理密碼：'); if(pw===null)return;
+
+  const pw=prompt('請輸入活動管理密碼：');
+  if(pw===null)return;
+
   const cleanPw=String(pw).trim();
   if(!cleanPw)return alert('請輸入活動管理密碼');
-  const rpcPromise=sb.rpc('v17_manager_snapshot',{p_slug:slug,p_password:cleanPw});
-  const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('管理資料讀取逾時，請重新整理後再試')),12000));
-  const {data,error}=await Promise.race([rpcPromise,timeoutPromise]);
-  if(error)return alert(error.message);
-  if(!data||!data.activity)return alert('活動管理資料讀取失敗');
-  currentSlug=slug;currentPassword=cleanPw;currentSnapshot=data;
 
-  // 核心：驗證成功就先進管理頁，不讓任何次要區塊 render 錯誤把「管理活動」整顆按鈕拖死。
+  const data=await directRpc('v17_manager_snapshot',{
+   p_slug:slug,
+   p_password:cleanPw
+  },12000);
+
+  if(!data||!data.activity)return alert('活動管理資料讀取失敗');
+
+  currentSlug=slug;
+  currentPassword=cleanPw;
+  currentSnapshot=data;
+
   show('manageView');
+
   try{
-    renderManage();
+   renderManage();
   }catch(renderErr){
-    console.error('管理頁部分內容載入失敗',renderErr);
-    $('#manageTitle').textContent=data?.activity?.name||'活動管理';
-    const box=$('#manageSummary');
-    if(box)box.innerHTML='<div class="notice">活動管理已登入，但部分欄位載入失敗。其他可用功能仍可操作。</div>';
-    alert('已進入活動管理；部分欄位載入失敗：'+(renderErr?.message||renderErr));
+   console.error('管理頁部分內容載入失敗',renderErr);
+   $('#manageTitle').textContent=data?.activity?.name||'活動管理';
+   const box=$('#manageSummary');
+   if(box)box.innerHTML='<div class="notice">活動管理已登入，但部分欄位載入失敗。其他可用功能仍可操作。</div>';
+   alert('已進入活動管理；部分欄位載入失敗：'+(renderErr?.message||renderErr));
   }
  }catch(e){
   console.error('開啟活動管理失敗',e);
@@ -1369,7 +1415,18 @@ $('#saveTripBrief').onclick=async()=>{
 $('#savePrep').onclick=async()=>{const {error}=await sb.rpc('v18_update_prep',{p_slug:currentSlug,p_password:currentPassword,p_mountain_area:$('#mMountainArea').value,p_mountain_name:norm($('#mMountainName').value),p_required_gear:selectedGear('#manageGearPicker',manageCustomGears)});if(error)alert(error.message);else{alert('出發準備已儲存');refreshManage()}};
 $('#addArticle').onclick=async()=>{const title=norm($('#articleTitle').value);if(!title)return alert('請輸入文章標題');const {error}=await sb.rpc('v18_add_article',{p_slug:currentSlug,p_password:currentPassword,p_title:title,p_category:$('#articleCategory').value,p_content:norm($('#articleContent').value),p_url:norm($('#articleUrl').value),p_pinned:$('#articlePinned').checked});if(error)return alert(error.message);$('#articleTitle').value='';$('#articleContent').value='';$('#articleUrl').value='';$('#articlePinned').checked=false;refreshManage()};
 
-async function refreshManage(){const {data,error}=await sb.rpc('v17_manager_snapshot',{p_slug:currentSlug,p_password:currentPassword});if(error)return alert(error.message);currentSnapshot=data;renderManage();renderEvents()}
+async function refreshManage(){
+ try{
+  const data=await directRpc('v17_manager_snapshot',{p_slug:currentSlug,p_password:currentPassword},12000);
+  if(!data||!data.activity)return alert('活動管理資料讀取失敗');
+  currentSnapshot=data;
+  renderManage();
+  renderEvents();
+ }catch(e){
+  console.error('重新讀取管理資料失敗',e);
+  alert('重新讀取管理資料失敗：'+(e?.message||e));
+ }
+}
 window.togglePaid=async(pid,status)=>{const {error}=await sb.rpc('v17_set_payment',{p_slug:currentSlug,p_password:currentPassword,p_participant_id:pid,p_status:status});if(error)alert(error.message);else refreshManage()};
 $('#manageAddExtraFee').onclick=()=>{manageExtraFeeDrafts=readExtra('#manageExtraFees','mExtra');manageExtraFeeDrafts.push({name:'',total:0,split:Math.max(1,+($('#mTotalPeople').value||1)),note:''});renderManageExtraFees(manageExtraFeeDrafts.map(x=>({name:x.name,total_amount:x.total,split_count:x.split,note:x.note})))};
 $('#saveFees').onclick=async()=>{
